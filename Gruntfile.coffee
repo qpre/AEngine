@@ -16,11 +16,18 @@ module.exports = (grunt) ->
       all:
         files:
           "build/iluvatar-core.min.js": ["build/iluvatar-core.js"]
-
         options:
-          compilation_level: "ADVANCED_OPTIMIZATIONS"
-          max_processes: 5
           banner: "/* Iluvatar Core */"
+          compilation_level: 'ADVANCED_OPTIMIZATIONS',
+          summary_detail_level: 3
+
+    uglify:
+      all:
+        options:
+          mangle: true
+        files: {
+          'build/iluvatar-core.min.js': 'build/iluvatar-core.js'
+        }
 
     bower:
       install: {}
@@ -46,24 +53,25 @@ module.exports = (grunt) ->
         src: ["build"]
 
 
-  # this, is orgasmically neat
+    # this, is orgasmically neat
     watch:
       bower:
         files: ["src/bower_components/*"]
 
       coffee:
         files: ["src/**/*.coffee"]
-        tasks: ["coffee:app"]
+        tasks: ["build"]
 
   # Load plugins
   grunt.loadNpmTasks "grunt-contrib-clean"
   grunt.loadNpmTasks "grunt-contrib-coffee"
   grunt.loadNpmTasks "grunt-closurecompiler"
+  grunt.loadNpmTasks "grunt-contrib-uglify"
   grunt.loadNpmTasks "grunt-contrib-copy"
   grunt.loadNpmTasks "grunt-contrib-watch"
   grunt.loadNpmTasks "grunt-bower-task"
 
   # Tasks
-  grunt.registerTask "build", ["clean", "bower:install", "coffee", "closurecompiler","copy"]
+  grunt.registerTask "build", ["clean", "bower:install", "coffee", "uglify:all","copy"]
 
   grunt.registerTask "default", ["build"]
