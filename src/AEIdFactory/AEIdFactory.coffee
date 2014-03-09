@@ -1,5 +1,11 @@
 #_require ../AESingleton/AESingleton
 
+###
+  AEIdFactory class aims to handle object identification through the engine via
+  GUIDs
+  This class follows the Singleton design pattern
+  @extend AEEngine.AESingleton
+###
 class AEIdFactory extends AESingleton
   _guids: null
 
@@ -17,7 +23,7 @@ class AEIdFactory extends AESingleton
     if @_guids.indexOf(guid.toString()) > -1 then true else false
 
   ###
-      getGUID: returns a unique GUID identifier
+    @return {Boolean} a brand new and unique GUID
   ###
   getGUID: () ->
     newguid = @guid()
@@ -37,5 +43,5 @@ class AEIdFactory extends AESingleton
 
   guid: () ->
     @s4() + @s4() + "-" + @s4() + "-" + @s4() + "-" + @s4() + "-" + @s4() + @s4() + @s4()
-        
+
 AEngine.AEIdFactory = AEIdFactory
