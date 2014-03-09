@@ -50,7 +50,12 @@ module.exports = (grunt) ->
 
     clean:
       app:
-        src: ["build"]
+        src: [
+          "build",
+          "Gruntfile.{js,map}"
+          "src/**/*.js",
+          "src/**/*.map"
+        ]
 
 
     # this, is orgasmically neat

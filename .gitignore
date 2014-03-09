@@ -11,6 +11,9 @@ pids
 logs
 results
 
+src/**/*.js
+src/**/*.map
+
 npm-debug.log
 node_modules
 build
