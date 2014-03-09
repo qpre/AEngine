@@ -18,7 +18,7 @@ module.exports = (grunt) ->
           "build/iluvatar-core.min.js": ["build/iluvatar-core.js"]
         options:
           banner: "/* Iluvatar Core */"
-          compilation_level: 'ADVANCED_OPTIMIZATIONS',
+          compilation_level: 'ADVANCED_OPTIMIZATIONS'
           summary_detail_level: 3
 
     uglify:
@@ -31,6 +31,12 @@ module.exports = (grunt) ->
 
     bower:
       install: {}
+
+    codo:
+      options:
+        title: "The A-Engine Documentation"
+        output: 'doc'
+        inputs: ["src"]
 
     copy:
       app:
@@ -61,6 +67,9 @@ module.exports = (grunt) ->
           "src/**/*.map"
         ]
 
+      doc:
+        src: ["doc"]
+
     # this, is orgasmically neat
     watch:
       bower:
@@ -78,8 +87,9 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-contrib-copy"
   grunt.loadNpmTasks "grunt-contrib-watch"
   grunt.loadNpmTasks "grunt-bower-task"
+  grunt.loadNpmTasks "grunt-codo"
 
   # Tasks
-  grunt.registerTask "build", ["clean", "bower:install", "coffee", "uglify:all","copy"]
+  grunt.registerTask "build", ["clean:sources", "clean:products", "bower:install", "coffee", "uglify:all","copy"]
 
   grunt.registerTask "default", ["build"]
