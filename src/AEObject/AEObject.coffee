@@ -14,6 +14,7 @@ class AEObject
 
   ###
     Init: default initializer for object
+    this method is called upon instanciation of a new object of such class
   ###
   init: () ->
 
@@ -29,6 +30,8 @@ class AEObject
             function.
             except for exceptions, EVERY instance should
             be created using this method
+
+    @return {Object} an instance of the inherriting class
   ###
   @create: () ->
     C = @
