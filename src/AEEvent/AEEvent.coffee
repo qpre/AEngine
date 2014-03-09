@@ -15,16 +15,17 @@ class AEEvent
 
   ###
       subscribe: adds a new object to the distribution list
-      @param {object} the listener object to be added
+      @param {Object} the listener object to be added
   ###
   subscribe: (listener) ->
     @_subscribers.push (listener)
 
   ###
-      notify: distributes args to every subscriber
+    notify: distributes args to every subscriber
+    @param {Object} args : an object containing the messages' arguments
   ###
   notify: (args) ->
     for i in [0..@_subscribers.length - 1] by 1
       @_subscribers[i](@_sender, args)
-            
+
 AEngine.AEEvent = AEEvent
