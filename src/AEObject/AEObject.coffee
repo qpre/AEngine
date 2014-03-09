@@ -3,25 +3,26 @@
 ###
 
 class AEObject
+  # @private
   _guid: null
-  
+
   ###
     Ctor : each gives an object its own unique guid
   ###
   constructor: () ->
     @_guid = AEngine.AEIdFactory.getInstance().getGUID()
-  
+
   ###
     Init: default initializer for object
   ###
   init: () ->
-  
+
   ###
     guid(): a public getter for the object's guid
   ###
   guid: () ->
     @_guid
-    
+
   ###
     create: creates a new instance for the given object
             passes possible arguments to the objects init
@@ -37,6 +38,6 @@ class AEObject
     else
       inst.init()
     inst
-    
-    
+
+
 AEngine.AEObject = AEObject
