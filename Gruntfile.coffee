@@ -87,7 +87,7 @@ module.exports = (grunt) ->
       publish:
         command: [
           "git checkout 'gh-pages'",
-          "rm -f engine",
+          "rm -rf engine",
           "mv build engine",
           "git commit -am '[BLD] automated build'",
           "git push", 
