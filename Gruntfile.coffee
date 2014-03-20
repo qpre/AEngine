@@ -79,9 +79,24 @@ module.exports = (grunt) ->
         files: ["src/**/*.coffee"]
         tasks: ["build"]
 
+    shell:
+      publish:
+        command: [
+          "git checkout 'gh-pages'",
+          "git add build",
+          "git commit -am '[BLD] automated build'",
+          "git push", 
+          "git checkout master"
+        ].join '&&'
+        options: {
+          stdout: true,
+          failOnError: true
+        }
+
   # Load plugins
   grunt.loadNpmTasks "grunt-contrib-clean"
   grunt.loadNpmTasks "grunt-contrib-coffee"
+  grunt.loadNpmTasks 'grunt-shell'
   grunt.loadNpmTasks "grunt-closurecompiler"
   grunt.loadNpmTasks "grunt-contrib-uglify"
   grunt.loadNpmTasks "grunt-contrib-copy"
@@ -91,5 +106,5 @@ module.exports = (grunt) ->
 
   # Tasks
   grunt.registerTask "build", ["clean:sources", "clean:products", "bower:install", "coffee", "uglify:all","copy"]
-
+  grunt.registerTask "deploy", ["build", "shell:publish"]
   grunt.registerTask "default", ["build"]
