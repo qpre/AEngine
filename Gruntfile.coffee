@@ -1,3 +1,5 @@
+banner = "/* The A-Engine Core: "+ (Date.now()).toString() +" */"
+
 module.exports = (grunt) ->
 
   # Project configuration.
@@ -17,7 +19,7 @@ module.exports = (grunt) ->
         files:
           "build/AEngine-core.min.js": ["build/AEngine-core.js"]
         options:
-          banner: "/* The A-Engine Core */"
+          banner: banner
           compilation_level: 'ADVANCED_OPTIMIZATIONS'
           summary_detail_level: 3
 
@@ -25,6 +27,7 @@ module.exports = (grunt) ->
       all:
         options:
           mangle: true
+          banner: banner
         files: {
           'build/AEngine-core.min.js': 'build/AEngine-core.js'
         }
