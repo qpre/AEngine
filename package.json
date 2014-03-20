@@ -16,6 +16,6 @@
     "grunt-shell": "^0.6.4"
   },
   "scripts": {
-    "test": "grunt deploy"
+    "test": "grunt build"
   }
 }
