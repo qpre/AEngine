@@ -1,5 +1,5 @@
 {
-  "name": "Iluvatar",
+  "name": "AEngine",
   "version": "0.0.0",
   "devDependencies": {
     "grunt-contrib-clean": "~0.5.0",
@@ -16,6 +16,6 @@
     "grunt-shell": "^0.6.4"
   },
   "scripts": {
-    "test": "grunt build && grunt deploy"
+    "test": "grunt deploy"
   }
 }
