@@ -10,14 +10,14 @@ module.exports = (grunt) ->
           join: true
 
         files:
-          "build/iluvatar-core.js": ["src/**/*.coffee"]
+          "build/AEngine-core.js": ["src/**/*.coffee"]
 
     closurecompiler:
       all:
         files:
-          "build/iluvatar-core.min.js": ["build/iluvatar-core.js"]
+          "build/AEngine-core.min.js": ["build/AEngine-core.js"]
         options:
-          banner: "/* Iluvatar Core */"
+          banner: "/* The A-Engine Core */"
           compilation_level: 'ADVANCED_OPTIMIZATIONS'
           summary_detail_level: 3
 
@@ -26,7 +26,7 @@ module.exports = (grunt) ->
         options:
           mangle: true
         files: {
-          'build/iluvatar-core.min.js': 'build/iluvatar-core.js'
+          'build/AEngine-core.min.js': 'build/AEngine-core.js'
         }
 
     bower:
