@@ -86,6 +86,7 @@ module.exports = (grunt) ->
     shell:
       publish:
         command: [
+          "git fetch origin",
           "git checkout 'gh-pages'",
           "rm -rf engine",
           "mv build engine",
