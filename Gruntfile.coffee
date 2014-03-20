@@ -1,8 +1,9 @@
-banner = "/* The A-Engine Core: "+ (Date.now()).toString() +" */"
-
 module.exports = (grunt) ->
 
+
   # Project configuration.
+  BANNER =  "/* The A-Engine Core: " + (Date.now()).toString() + " */"
+
   grunt.initConfig
     pkg: grunt.file.readJSON("package.json")
     coffee:
@@ -19,7 +20,7 @@ module.exports = (grunt) ->
         files:
           "build/AEngine-core.min.js": ["build/AEngine-core.js"]
         options:
-          banner: banner
+          banner: BANNER
           compilation_level: 'ADVANCED_OPTIMIZATIONS'
           summary_detail_level: 3
 
@@ -27,7 +28,7 @@ module.exports = (grunt) ->
       all:
         options:
           mangle: true
-          banner: banner
+          banner: BANNER
         files: {
           'build/AEngine-core.min.js': 'build/AEngine-core.js'
         }
