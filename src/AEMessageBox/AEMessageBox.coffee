@@ -1,4 +1,4 @@
-#_require ../AEWorker/AEWorker
+#<< src/AEWorker/AEWorker
 
 ###
   AEMessageBox:
@@ -7,7 +7,7 @@
   @extend AEngine.AEWorker
 ###
 
-class AEMessageBox extends AEWorker
+class src.AEMessageBox.AEMessageBox extends AEWorker
   # @private
   _messages: null
 

@@ -14,7 +14,8 @@
     "codo": "^2.0.6",
     "grunt-codo": "^0.1.0",
     "grunt-shell": "^0.6.4",
-    "grunt-rehab": "0.0.1"
+    "grunt-rehab": "0.0.1",
+    "grunt-coffee-toaster": "^0.1.4"
   },
   "scripts": {
     "test": "grunt build"

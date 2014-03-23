@@ -1,7 +1,7 @@
-#_require ../AEObject/AEObject
-#_require ../AEEvent/AEEvent
+#<< src/AEObject/AEObject
+#<< src/AEEvent/AEEvent
 
-class AEView extends AEObject
+class src.AEMVC.AEView extends AEObject
   init: () ->
     
 AEngine.AEView = AEView

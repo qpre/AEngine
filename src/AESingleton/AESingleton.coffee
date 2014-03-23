@@ -1,7 +1,7 @@
 ###
   Simple Singleton implementation
 ###
-class AESingleton
+class src.AESingleton.AESingleton
   # @private
   @_instance: null
 

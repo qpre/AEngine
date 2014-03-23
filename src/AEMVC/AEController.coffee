@@ -1,6 +1,6 @@
-#_require ../AEObject/AEObject
+#<< src/AEObject/AEObject
 
-class AEController extends AEObject
+class src.AEMVC.AEController extends AEObject
   init: () ->
 
 AEngine.AEController = AEController

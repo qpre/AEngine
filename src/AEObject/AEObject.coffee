@@ -2,7 +2,7 @@
     AEObject: a base class for every object in the engine
 ###
 
-class AEObject
+class src.AEObject.AEObject
   # @private
   _guid: null
 

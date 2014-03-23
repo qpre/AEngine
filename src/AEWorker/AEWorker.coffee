@@ -1,4 +1,4 @@
-#_require ../AEObject/AEObject
+#_require src/AEObject/AEObject
 
 ###
     AEWorker : a JS Worker superclass
@@ -8,7 +8,7 @@
         TODO: fromFile instantiation
 ###
 
-class AEWorker extends AEObject
+class src.AEWorker.AEWorker extends AEObject
   _worker: null
 
   init: (script) ->

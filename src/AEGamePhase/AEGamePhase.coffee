@@ -1,5 +1,5 @@
-#_require ../AEObject/AEObject
-#_require ../AEEvent/AEEvent
+#<< src/AEObject/AEObject
+#<< src/AEEvent/AEEvent
 
 StatusEnum = Object.freeze({
   ACTIVE: 0,
@@ -11,7 +11,7 @@ StatusEnum = Object.freeze({
     represents a single state for the engine
   @extends AEngine.AEObject
 ###
-class AEGamePhase extends AEObject
+class src.AEGamePhase.AEGamePhase extends AEObject
   # @private
   _status: StatusEnum.PAUSED
   # @private

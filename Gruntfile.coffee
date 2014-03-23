@@ -7,6 +7,14 @@ module.exports = (grunt) ->
 
   grunt.initConfig
     pkg: grunt.file.readJSON("package.json")
+
+    toaster:
+      dist:
+        bare: false
+        minify: false
+        folders: { "src":"src" }
+        release: "build/AEngine-core.js"
+
     coffee:
       app:
         options:
@@ -62,7 +70,7 @@ module.exports = (grunt) ->
     clean:
       products:
         src: [
-          "build"
+          "build/**/*"
         ]
 
       sources:
@@ -110,8 +118,9 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-contrib-watch"
   grunt.loadNpmTasks "grunt-bower-task"
   grunt.loadNpmTasks "grunt-codo"
+  grunt.loadNpmTasks('grunt-coffee-toaster');
 
   # Tasks
-  grunt.registerTask "build", ["clean:sources", "clean:products", "bower:install", "coffee", "uglify:all","copy"]
+  grunt.registerTask "build", ["clean:sources", "clean:products", "bower:install", "toaster:dist", "uglify:all","copy"]
   grunt.registerTask "deploy", ["build", "shell:publish"]
   grunt.registerTask "default", ["build"]

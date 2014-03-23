@@ -1,5 +1,5 @@
-#_require AEGamePhase
-#_require ../AESingleton/AESingleton
+#<< src/AEGamePhase/AEGamePhase
+#<< src/AESingleton/AESingleton
 
 ###
   AEGamePhaseManager aims to handle game states and their transitions.
@@ -8,7 +8,7 @@
   TODO: Add some error checking in case of failing to transit
 ###
 
-class AEGamePhaseManager extends AESingleton
+class src.AEGamePhase.AEGamePhaseManager extends AESingleton
   # @private
   _phases: null
   # @private
