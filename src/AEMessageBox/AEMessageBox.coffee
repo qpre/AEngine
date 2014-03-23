@@ -7,7 +7,7 @@
   @extend AEngine.AEWorker
 ###
 
-class src.AEMessageBox.AEMessageBox extends AEWorker
+class AEMessageBox extends AEWorker
   # @private
   _messages: null
 

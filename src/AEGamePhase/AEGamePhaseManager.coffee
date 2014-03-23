@@ -8,7 +8,7 @@
   TODO: Add some error checking in case of failing to transit
 ###
 
-class src.AEGamePhase.AEGamePhaseManager extends AESingleton
+class AEGamePhaseManager extends AESingleton
   # @private
   _phases: null
   # @private

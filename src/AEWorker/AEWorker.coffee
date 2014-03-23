@@ -8,7 +8,7 @@
         TODO: fromFile instantiation
 ###
 
-class src.AEWorker.AEWorker extends AEObject
+class AEWorker extends AEObject
   _worker: null
 
   init: (script) ->

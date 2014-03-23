@@ -1,7 +1,7 @@
 #<< src/AEObject/AEObject
 #<< src/AEEvent/AEEvent
 
-class src.AEMVC.AEModel extends AEObject
+class AEModel extends AEObject
   _propertyChangedEvent: null
 	
   init: () ->

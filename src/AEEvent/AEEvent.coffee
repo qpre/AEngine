@@ -2,7 +2,7 @@
     A simple Observer pattern design implementation
 ###
 
-class src.AEEvent.AEEvent
+class AEEvent
   _subscribers: null
   _sender: null
 
