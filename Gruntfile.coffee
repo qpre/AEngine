@@ -71,7 +71,7 @@ module.exports = (grunt) ->
     clean:
       products:
         src: [
-          "build/**/*"
+          "build"
         ]
 
       sources:
@@ -108,6 +108,18 @@ module.exports = (grunt) ->
           stdout: true,
           failOnError: true
         }
+      createBuild:
+        command: "mkdir build"
+        options: {
+          stdout: true,
+          failOnError: true
+        }
+      removeBuild:
+        command: "rm -rf build"
+        options: {
+          stdout: true,
+          failOnError: true
+        }
 
   # Load plugins
   grunt.loadNpmTasks "grunt-contrib-clean"
@@ -122,6 +134,8 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks('grunt-coffee-toaster');
 
   # Tasks
-  grunt.registerTask "build", ["clean:sources", "clean:products", "bower:install", "toaster:dist", "uglify:all","copy"]
+  grunt.registerTask "cleanbuild", ["clean:sources", "clean:products"]
+  grunt.registerTask "compile" ,["shell:createBuild","bower:install", "toaster:dist", "uglify:all", "copy"]
+  grunt.registerTask "build", ["cleanbuild", "compile"]
   grunt.registerTask "deploy", ["build", "shell:publish"]
   grunt.registerTask "default", ["build"]
