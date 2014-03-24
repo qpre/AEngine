@@ -1,3 +1,5 @@
+#<< src/AEIdFactory/AEIdFactory
+
 ###
     AEObject: a base class for every object in the engine
 ###
@@ -10,7 +12,7 @@ class AEObject
     Ctor : each gives an object its own unique guid
   ###
   constructor: () ->
-    @_guid = AEngine.AEIdFactory.getInstance().getGUID()
+    @_guid = AEIdFactory.getInstance().getGUID()
 
   ###
     Init: default initializer for object
