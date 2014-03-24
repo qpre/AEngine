@@ -98,7 +98,7 @@ var AE = {'AEEvent':{},'AEGamePhase':{},'AEIdFactory':{},'AEMVC':{},'AEMessageBo
 
     return AEIdFactory;
 
-  })(AESingleton);
+  })(AE.AESingleton.AESingleton);
 
   /*
       AEObject: a base class for every object in the engine
@@ -325,7 +325,7 @@ var AE = {'AEEvent':{},'AEGamePhase':{},'AEIdFactory':{},'AEMVC':{},'AEMessageBo
 
     return AEGamePhase;
 
-  })(AEObject);
+  })(AE.AEObject.AEObject);
 
   /*
     AEGamePhaseManager aims to handle game states and their transitions.
@@ -419,21 +419,17 @@ var AE = {'AEEvent':{},'AEGamePhase':{},'AEIdFactory':{},'AEMVC':{},'AEMessageBo
 
     return AEGamePhaseManager;
 
-  })(AESingleton);
+  })(AE.AESingleton.AESingleton);
 
-  AE.AEMVC.AEController = (function(_super) {
+  AE.AEMVC.AEController = (function() {
 
-    __extends(AEController, _super);
-
-    function AEController() {
-      return AEController.__super__.constructor.apply(this, arguments);
-    }
+    function AEController() {}
 
     AEController.prototype.init = function() {};
 
     return AEController;
 
-  })(AEObject);
+  })();
 
   AE.AEMVC.AEModel = (function(_super) {
 
@@ -482,7 +478,7 @@ var AE = {'AEEvent':{},'AEGamePhase':{},'AEIdFactory':{},'AEMVC':{},'AEMessageBo
 
     return AEModel;
 
-  })(AEObject);
+  })(AE.AEObject.AEObject);
 
   AE.AEMVC.AEView = (function(_super) {
 
@@ -496,6 +492,6 @@ var AE = {'AEEvent':{},'AEGamePhase':{},'AEIdFactory':{},'AEMVC':{},'AEMessageBo
 
     return AEView;
 
-  })(AEObject);
+  })(AE.AEObject.AEObject);
 
 }).call(this);
