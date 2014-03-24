@@ -27,5 +27,3 @@ class AEEvent
   notify: (args) ->
     for i in [0..@_subscribers.length - 1] by 1
       @_subscribers[i](@_sender, args)
-
-AEngine.AEEvent = AEEvent

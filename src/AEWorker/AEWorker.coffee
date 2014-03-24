@@ -8,19 +8,17 @@
         TODO: fromFile instantiation
 ###
 
-# class AEWorker extends AEObject
-#   _worker: null
+class AEWorker extends AEObject
+  _worker: null
 
-#   init: (script) ->
-#     blob = new Blob([script], { type: 'application/javascript' })
-#     blobURL = URL.createObjectURL blob
-#     @_worker = new Worker blobURL
-#     URL.revokeObjectURL blobURL
+  init: (script) ->
+    blob = new Blob([script], { type: 'application/javascript' })
+    blobURL = URL.createObjectURL blob
+    @_worker = new Worker blobURL
+    URL.revokeObjectURL blobURL
 	
-#    onMessage: (callback) ->
-#     @_worker.onmessage = callback
+   onMessage: (callback) ->
+    @_worker.onmessage = callback
 		
-#    postMessage: (message) ->
-#     @_worker.postMessage(message)
-
-# AEngine.AEWorker = AEWorker
+   postMessage: (message) ->
+    @_worker.postMessage(message)

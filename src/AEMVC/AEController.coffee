@@ -2,5 +2,3 @@
 
 class AEController extends AEObject
   init: () ->
-
-AEngine.AEController = AEController

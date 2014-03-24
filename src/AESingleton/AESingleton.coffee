@@ -10,5 +10,3 @@ class AESingleton
   ###
   @getInstance: () ->
     @_instance or= new @()
-
-AEngine.AESingleton = AESingleton

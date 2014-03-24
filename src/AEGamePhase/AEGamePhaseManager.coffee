@@ -69,5 +69,3 @@ class AEGamePhaseManager extends AESingleton
       @_current.out()
       @_current.setUnactive()
       @setCurrent(next)
-
-AEngine.AEGamePhaseManager = AEGamePhaseManager

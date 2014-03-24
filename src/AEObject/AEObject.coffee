@@ -42,5 +42,3 @@ class AEObject
       inst.init()
     inst
 
-
-AEngine.AEObject = AEObject

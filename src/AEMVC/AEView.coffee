@@ -3,5 +3,3 @@
 
 class AEView extends AEObject
   init: () ->
-    
-AEngine.AEView = AEView

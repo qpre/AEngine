@@ -43,5 +43,3 @@ class AEIdFactory extends AESingleton
 
   guid: () ->
     @s4() + @s4() + "-" + @s4() + "-" + @s4() + "-" + @s4() + "-" + @s4() + @s4() + @s4()
-
-AEngine.AEIdFactory = AEIdFactory

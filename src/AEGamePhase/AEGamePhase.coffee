@@ -1,7 +1,7 @@
 #<< src/AEObject/AEObject
 #<< src/AEEvent/AEEvent
 
-StatusEnum = Object.freeze({
+AEPhaseStatusEnum = Object.freeze({
   ACTIVE: 0,
   PAUSED: 1
 })
@@ -13,7 +13,7 @@ StatusEnum = Object.freeze({
 ###
 class AEGamePhase extends AEObject
   # @private
-  _status: StatusEnum.PAUSED
+  _status: AEPhaseStatusEnum.PAUSED
   # @private
   _statusChangedEvent: null
 
@@ -47,14 +47,14 @@ class AEGamePhase extends AEObject
     self explanatory
   ###
   setActive: () ->
-    @_status = StatusEnum.ACTIVE
+    @_status = AEPhaseStatusEnum.ACTIVE
     @notifyStatusChanged()
 
   ###
     self explanatory
   ###
   setUnactive: () ->
-    @_status = StatusEnum.PAUSED
+    @_status = AEPhaseStatusEnum.PAUSED
     @notifyStatusChanged()
 
   ###
@@ -74,6 +74,3 @@ class AEGamePhase extends AEObject
   ###
   run: () ->
     @_run()
-
-AEngine.AEGamePhase = AEGamePhase
-AEngine.AEGamePhase.StatusEnum = StatusEnum

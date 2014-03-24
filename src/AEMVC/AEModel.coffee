@@ -26,5 +26,3 @@ class AEModel extends AEObject
   ###
   notifyPropertyChanged: (property) ->
     @_propertyChangedEvent.notify {'property': property }
-
-AEngine.AEModel = AEModel
