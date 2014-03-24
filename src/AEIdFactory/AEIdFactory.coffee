@@ -6,7 +6,7 @@
   This class follows the Singleton design pattern
   @extend AEEngine.AESingleton
 ###
-class AE.AEIdFactory.AEIdFactory extends AESingleton
+class AE.AEIdFactory.AEIdFactory extends AE.AESingleton.AESingleton
   _guids: null
 
   ###

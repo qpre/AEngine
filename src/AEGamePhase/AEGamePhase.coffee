@@ -11,7 +11,7 @@ AEPhaseStatusEnum = Object.freeze({
     represents a single state for the engine
   @extends AEngine.AEObject
 ###
-class AE.AEGamePhase.AEGamePhase extends AEObject
+class AE.AEGamePhase.AEGamePhase extends AE.AEObject.AEObject
   # @private
   _status: AEPhaseStatusEnum.PAUSED
   # @private
