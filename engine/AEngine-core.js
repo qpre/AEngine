@@ -8,49 +8,15 @@
 */
 
 
+/*
+    AEObject: a base class for every object in the engine
+*/
+
+
 (function() {
-  var AEController, AEEvent, AEGamePhase, AEGamePhaseManager, AEIdFactory, AEMessageBox, AEModel, AEObject, AESingleton, AEView, AEWorker, AEngine, StatusEnum,
+  var AEController, AEEvent, AEGamePhase, AEGamePhaseManager, AEIdFactory, AEModel, AEObject, AESingleton, AEView, AEngine, StatusEnum,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  AEWorker = (function(_super) {
-
-    __extends(AEWorker, _super);
-
-    function AEWorker() {
-      return AEWorker.__super__.constructor.apply(this, arguments);
-    }
-
-    AEWorker.prototype._worker = null;
-
-    AEWorker.prototype.init = function(script) {
-      var blob, blobURL;
-      blob = new Blob([script], {
-        type: 'application/javascript'
-      });
-      blobURL = URL.createObjectURL(blob);
-      this._worker = new Worker(blobURL);
-      return URL.revokeObjectURL(blobURL);
-    };
-
-    AEWorker.prototype.onMessage = function(callback) {
-      return this._worker.onmessage = callback;
-    };
-
-    AEWorker.prototype.postMessage = function(message) {
-      return this._worker.postMessage(message);
-    };
-
-    return AEWorker;
-
-  })(AEObject);
-
-  AEngine.AEWorker = AEWorker;
-
-  /*
-      AEObject: a base class for every object in the engine
-  */
-
 
   AEObject = (function() {
 
@@ -558,58 +524,5 @@
   })(AEObject);
 
   AEngine.AEView = AEView;
-
-  /*
-    AEMessageBox:
-      A message box accessible by every object
-  
-    @extend AEngine.AEWorker
-  */
-
-
-  AEMessageBox = (function(_super) {
-
-    __extends(AEMessageBox, _super);
-
-    function AEMessageBox() {
-      return AEMessageBox.__super__.constructor.apply(this, arguments);
-    }
-
-    AEMessageBox.prototype._messages = null;
-
-    /*
-        @param {String} dest : the guid for the message recipient
-        @param {String} message : self explanatory
-    */
-
-
-    AEMessageBox.prototype.post = function(dest, message) {
-      return this._messages[dest].push(message);
-    };
-
-    /*
-        @param {String} dest : the guid for the message recipient
-        @return {Array.<String>} an array containing all the messages since the last update
-    */
-
-
-    AEMessageBox.prototype.get = function(dest) {
-      return this._messages[dest];
-    };
-
-    /*
-        @param {string} dest : the guid for the message recipient
-    */
-
-
-    AEMessageBox.prototype.flush = function(dest) {
-      return this._messages[dest] = [];
-    };
-
-    return AEMessageBox;
-
-  })(AEWorker);
-
-  AEngine.AEMessageBox = AEMessageBox;
 
 }).call(this);
