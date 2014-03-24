@@ -11,20 +11,8 @@
 (function() {
   var AEController, AEEvent, AEGamePhase, AEGamePhaseManager, AEIdFactory, AEMessageBox, AEModel, AEObject, AEPhaseStatusEnum, AESingleton, AEView, AEWorker, AEngine,
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { 
-      for (var key in parent) {
-        if (__hasProp.call(parent, key))
-          child[key] = parent[key];
-      }
-      function ctor() {
-        this.constructor = child; 
-      } 
-      ctor.prototype = parent.prototype; 
-      child.prototype = new ctor(); 
-      child.__super__ = parent.prototype; 
-      return child; 
-    };
-    
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   AEWorker = (function(_super) {
 
     __extends(AEWorker, _super);
@@ -58,6 +46,100 @@
   })(AEObject);
 
   /*
+    Simple Singleton implementation
+  */
+
+
+  AESingleton = (function() {
+
+    function AESingleton() {}
+
+    AESingleton._instance = null;
+
+    /*
+        @return {Object} an instance of the inheritting object
+    */
+
+
+    AESingleton.getInstance = function() {
+      return this._instance || (this._instance = new this());
+    };
+
+    return AESingleton;
+
+  })();
+
+  /*
+    AEIdFactory class aims to handle object identification through the engine via
+    GUIDs
+    This class follows the Singleton design pattern
+    @extend AEEngine.AESingleton
+  */
+
+
+  AEIdFactory = (function(_super) {
+
+    __extends(AEIdFactory, _super);
+
+    AEIdFactory.prototype._guids = null;
+
+    /*
+          constructor: called on singleton's new instance creation
+    */
+
+
+    function AEIdFactory() {
+      this._guids = [];
+    }
+
+    /*
+          has: checks if param guid has already been registered
+          @param {String} the GUID to be checked
+    */
+
+
+    AEIdFactory.prototype.has = function(guid) {
+      if (this._guids.indexOf(guid.toString()) > -1) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    /*
+        @return {Boolean} a brand new and unique GUID
+    */
+
+
+    AEIdFactory.prototype.getGUID = function() {
+      var newguid;
+      newguid = this.guid();
+      if (!this.has(newguid)) {
+        this._guids.push(newguid);
+      } else {
+        newguid = this.getGUID();
+      }
+      return newguid;
+    };
+
+    /*
+          GUID GENERATION FUNCTIONS
+    */
+
+
+    AEIdFactory.prototype.s4 = function() {
+      return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    };
+
+    AEIdFactory.prototype.guid = function() {
+      return this.s4() + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + this.s4() + this.s4();
+    };
+
+    return AEIdFactory;
+
+  })(AESingleton);
+
+  /*
       AEObject: a base class for every object in the engine
   */
 
@@ -72,7 +154,7 @@
 
 
     function AEObject() {
-      this._guid = AEngine.AEIdFactory.getInstance().getGUID();
+      this._guid = AEIdFactory.getInstance().getGUID();
     }
 
     /*
@@ -116,30 +198,6 @@
     };
 
     return AEObject;
-
-  })();
-
-  /*
-    Simple Singleton implementation
-  */
-
-
-  AESingleton = (function() {
-
-    function AESingleton() {}
-
-    AESingleton._instance = null;
-
-    /*
-        @return {Object} an instance of the inheritting object
-    */
-
-
-    AESingleton.getInstance = function() {
-      return this._instance || (this._instance = new this());
-    };
-
-    return AESingleton;
 
   })();
 
@@ -399,76 +457,6 @@
     };
 
     return AEGamePhaseManager;
-
-  })(AESingleton);
-
-  /*
-    AEIdFactory class aims to handle object identification through the engine via
-    GUIDs
-    This class follows the Singleton design pattern
-    @extend AEEngine.AESingleton
-  */
-
-
-  AEIdFactory = (function(_super) {
-
-    __extends(AEIdFactory, _super);
-
-    AEIdFactory.prototype._guids = null;
-
-    /*
-          constructor: called on singleton's new instance creation
-    */
-
-
-    function AEIdFactory() {
-      this._guids = [];
-    }
-
-    /*
-          has: checks if param guid has already been registered
-          @param {String} the GUID to be checked
-    */
-
-
-    AEIdFactory.prototype.has = function(guid) {
-      if (this._guids.indexOf(guid.toString()) > -1) {
-        return true;
-      } else {
-        return false;
-      }
-    };
-
-    /*
-        @return {Boolean} a brand new and unique GUID
-    */
-
-
-    AEIdFactory.prototype.getGUID = function() {
-      var newguid;
-      newguid = this.guid();
-      if (!this.has(newguid)) {
-        this._guids.push(newguid);
-      } else {
-        newguid = this.getGUID();
-      }
-      return newguid;
-    };
-
-    /*
-          GUID GENERATION FUNCTIONS
-    */
-
-
-    AEIdFactory.prototype.s4 = function() {
-      return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-    };
-
-    AEIdFactory.prototype.guid = function() {
-      return this.s4() + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + this.s4() + this.s4();
-    };
-
-    return AEIdFactory;
 
   })(AESingleton);
 
