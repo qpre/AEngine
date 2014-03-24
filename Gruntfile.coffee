@@ -13,7 +13,7 @@ module.exports = (grunt) ->
         minify: false
         packaging: true
         # bare: true
-        folders: { "src":"AE" }
+        folders: { "src/Core":"AE" }
         release: "build/AEngine-core.js"
 
     coffee:
