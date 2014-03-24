@@ -1,10 +1,10 @@
-#<< src/AEIdFactory/AEIdFactory
+#<< AE/AEIdFactory/AEIdFactory
 
 ###
     AEObject: a base class for every object in the engine
 ###
 
-class AEObject
+class AE.AEObject.AEObject
   # @private
   _guid: null
 

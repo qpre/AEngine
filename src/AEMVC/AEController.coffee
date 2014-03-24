@@ -1,4 +1,4 @@
-#<< src/AEObject/AEObject
+#<< AE/AEObject/AEObject
 
-class AEController extends AEObject
+class AE.AEMVC.AEController extends AEObject
   init: () ->

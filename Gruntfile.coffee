@@ -11,9 +11,9 @@ module.exports = (grunt) ->
     toaster:
       dist:
         minify: false
-        packaging: false
+        packaging: true
         bare: false
-        folders: { "src":"src" }
+        folders: { "src":"AE" }
         release: "build/AEngine-core.js"
 
     coffee:

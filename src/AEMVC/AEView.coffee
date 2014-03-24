@@ -1,5 +1,5 @@
-#<< src/AEObject/AEObject
-#<< src/AEEvent/AEEvent
+#<< AE/AEObject/AEObject
+#<< AE/AEEvent/AEEvent
 
-class AEView extends AEObject
+class AE.AEMVC.AEView extends AEObject
   init: () ->

@@ -1,4 +1,4 @@
-#<< src/AESingleton/AESingleton
+#<< AE/AESingleton/AESingleton
 
 ###
   AEIdFactory class aims to handle object identification through the engine via
@@ -6,7 +6,7 @@
   This class follows the Singleton design pattern
   @extend AEEngine.AESingleton
 ###
-class AEIdFactory extends AESingleton
+class AE.AEIdFactory.AEIdFactory extends AESingleton
   _guids: null
 
   ###

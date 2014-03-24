@@ -1,4 +1,4 @@
-# #<< src/AEWorker/AEWorker
+# #<< AE/AEWorker/AEWorker
 
 # ###
 #   AEMessageBox:
@@ -30,3 +30,4 @@
 #   ###
 #   flush: (dest) ->
 #     @_messages[dest] = [] # TODO: Avoid garbage collector by finding a smarte approach
+

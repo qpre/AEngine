@@ -1,4 +1,4 @@
-# #_require src/AEObject/AEObject
+# #_require AE/AEObject/AEObject
 
 # ###
 #     AEWorker : a JS Worker superclass
