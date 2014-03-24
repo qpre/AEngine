@@ -26,7 +26,7 @@ class AE.AEGamePhase.AEGamePhase extends AE.AEObject.AEObject
     @param {Function} _run : the function handling the state
   ###
   constructor: (@_name, @_in, @_out, @_run) ->
-    @_statusChangedEvent = new AEEvent(@)
+    @_statusChangedEvent = new AE.AEEvent.AEEvent(@)
     @_statusChangedEvent.subscribe(@onStatusChanged)
 
   ###

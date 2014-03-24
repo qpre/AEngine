@@ -38,7 +38,7 @@ class AE.AEGamePhase.AEGamePhaseManager extends AE.AESingleton.AESingleton
     if (@has(name))
       console.error "Phase " + name + " already exists"
     else
-      @_phases[name] = new AEGamePhase(name, actionIn, actionOut, run)
+      @_phases[name] = new AE.AEGamePhase.AEGamePhase(name, actionIn, actionOut, run)
 
   ###
     setCurrent:
@@ -48,7 +48,7 @@ class AE.AEGamePhase.AEGamePhaseManager extends AE.AESingleton.AESingleton
   ###
   setCurrent: (current) ->
     if (@has(current.toString()))
-      @_current = @_phases[current]
+      @_current = @_phases[current.toString()]
       @_current.setActive()
       @_current.in()
       @_current.run()
