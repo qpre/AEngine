@@ -248,7 +248,7 @@ var AE = {'AEEvent':{},'AEGamePhase':{},'AEIdFactory':{},'AEMVC':{},'AEMessageBo
       this._in = _in;
       this._out = _out;
       this._run = _run;
-      this._statusChangedEvent = new AEEvent(this);
+      this._statusChangedEvent = new AE.AEEvent.AEEvent(this);
       this._statusChangedEvent.subscribe(this.onStatusChanged);
     }
 
@@ -374,7 +374,7 @@ var AE = {'AEEvent':{},'AEGamePhase':{},'AEIdFactory':{},'AEMVC':{},'AEMessageBo
       if (this.has(name)) {
         return console.error("Phase " + name + " already exists");
       } else {
-        return this._phases[name] = new AEGamePhase(name, actionIn, actionOut, run);
+        return this._phases[name] = new AE.AEGamePhase.AEGamePhase(name, actionIn, actionOut, run);
       }
     };
 
@@ -388,7 +388,7 @@ var AE = {'AEEvent':{},'AEGamePhase':{},'AEIdFactory':{},'AEMVC':{},'AEMessageBo
 
     AEGamePhaseManager.prototype.setCurrent = function(current) {
       if (this.has(current.toString())) {
-        this._current = this._phases[current];
+        this._current = this._phases[current.toString()];
         this._current.setActive();
         this._current["in"]();
         return this._current.run();
