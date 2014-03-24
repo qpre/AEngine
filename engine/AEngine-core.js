@@ -270,7 +270,7 @@ var AE = {'MVC':{},'States':{}};
 
     return Model;
 
-  })(AE.Core.Object);
+  })(AE.Object);
 
   AE.MVC.View = (function(_super) {
 
