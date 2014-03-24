@@ -1,3 +1,5 @@
+var AE = {'AEEvent':{},'AEGamePhase':{},'AEIdFactory':{},'AEMVC':{},'AEMessageBox':{},'AEObject':{},'AESingleton':{},'AEWorker':{}};
+
 
 /*
   Simple Singleton implementation
@@ -5,11 +7,11 @@
 
 
 (function() {
-  var AEController, AEEvent, AEGamePhase, AEGamePhaseManager, AEIdFactory, AEModel, AEObject, AEPhaseStatusEnum, AESingleton, AEView, AEngine,
+  var AEPhaseStatusEnum, AEngine,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  AESingleton = (function() {
+  AE.AESingleton.AESingleton = (function() {
 
     function AESingleton() {}
 
@@ -36,7 +38,7 @@
   */
 
 
-  AEIdFactory = (function(_super) {
+  AE.AEIdFactory.AEIdFactory = (function(_super) {
 
     __extends(AEIdFactory, _super);
 
@@ -103,7 +105,7 @@
   */
 
 
-  AEObject = (function() {
+  AE.AEObject.AEObject = (function() {
 
     AEObject.prototype._guid = null;
 
@@ -167,7 +169,7 @@
   */
 
 
-  AEEvent = (function() {
+  AE.AEEvent.AEEvent = (function() {
 
     AEEvent.prototype._subscribers = null;
 
@@ -225,7 +227,7 @@
   */
 
 
-  AEGamePhase = (function(_super) {
+  AE.AEGamePhase.AEGamePhase = (function(_super) {
 
     __extends(AEGamePhase, _super);
 
@@ -333,7 +335,7 @@
   */
 
 
-  AEGamePhaseManager = (function(_super) {
+  AE.AEGamePhase.AEGamePhaseManager = (function(_super) {
 
     __extends(AEGamePhaseManager, _super);
 
@@ -419,7 +421,7 @@
 
   })(AESingleton);
 
-  AEController = (function(_super) {
+  AE.AEMVC.AEController = (function(_super) {
 
     __extends(AEController, _super);
 
@@ -433,7 +435,7 @@
 
   })(AEObject);
 
-  AEModel = (function(_super) {
+  AE.AEMVC.AEModel = (function(_super) {
 
     __extends(AEModel, _super);
 
@@ -482,7 +484,7 @@
 
   })(AEObject);
 
-  AEView = (function(_super) {
+  AE.AEMVC.AEView = (function(_super) {
 
     __extends(AEView, _super);
 
