@@ -7,7 +7,7 @@ var AE = {'AEEvent':{},'AEGamePhase':{},'AEIdFactory':{},'AEMVC':{},'AEMessageBo
 
 
 (function() {
-  var AEPhaseStatusEnum, AEngine,
+  var AE, AEPhaseStatusEnum,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -162,7 +162,7 @@ var AE = {'AEEvent':{},'AEGamePhase':{},'AEIdFactory':{},'AEMVC':{},'AEMessageBo
 
   })();
 
-  AEngine = window.AEngine = {};
+  AE = window.AE = {};
 
   /*
       A simple Observer pattern design implementation
