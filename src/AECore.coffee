@@ -1,1 +1,1 @@
-AEngine = window.AEngine = {}
+AE = window.AE = {}
