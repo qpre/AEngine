@@ -8,27 +8,47 @@
 */
 
 
-/*
-    AEObject: a base class for every object in the engine
-*/
-
-
 (function() {
-  var AEController, AEEvent, AEGamePhase, AEGamePhaseManager, AEIdFactory, AEModel, AEObject, AESingleton, AEView, AEngine, StatusEnum,
+  var AEController, AEEvent, AEGamePhase, AEGamePhaseManager, AEIdFactory, AEMessageBox, AEModel, AEObject, AEPhaseStatusEnum, AESingleton, AEView, AEWorker, AEngine,
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { 
-      for (var key in parent) {
-        if (__hasProp.call(parent, key))
-          child[key] = parent[key];
-      }
-      function ctor() {
-        this.constructor = child; 
-      } 
-      ctor.prototype = parent.prototype; 
-      child.prototype = new ctor(); 
-      child.__super__ = parent.prototype; 
-      return child; 
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  AEWorker = (function(_super) {
+
+    __extends(AEWorker, _super);
+
+    function AEWorker() {
+      return AEWorker.__super__.constructor.apply(this, arguments);
+    }
+
+    AEWorker.prototype._worker = null;
+
+    AEWorker.prototype.init = function(script) {
+      var blob, blobURL;
+      blob = new Blob([script], {
+        type: 'application/javascript'
+      });
+      blobURL = URL.createObjectURL(blob);
+      this._worker = new Worker(blobURL);
+      return URL.revokeObjectURL(blobURL);
     };
+
+    AEWorker.prototype.onMessage = function(callback) {
+      return this._worker.onmessage = callback;
+    };
+
+    AEWorker.prototype.postMessage = function(message) {
+      return this._worker.postMessage(message);
+    };
+
+    return AEWorker;
+
+  })(AEObject);
+
+  /*
+      AEObject: a base class for every object in the engine
+  */
+
 
   AEObject = (function() {
 
@@ -87,8 +107,6 @@
 
   })();
 
-  AEngine.AEObject = AEObject;
-
   /*
     Simple Singleton implementation
   */
@@ -112,10 +130,6 @@
     return AESingleton;
 
   })();
-
-  AEngine.AESingleton = AESingleton;
-
-  AEngine = window.AEngine = {};
 
   /*
       A simple Observer pattern design implementation
@@ -168,9 +182,205 @@
 
   })();
 
-  AEngine.AEEvent = AEEvent;
+  /*
+    AEIdFactory class aims to handle object identification through the engine via
+    GUIDs
+    This class follows the Singleton design pattern
+    @extend AEEngine.AESingleton
+  */
 
-  StatusEnum = Object.freeze({
+
+  AEIdFactory = (function(_super) {
+
+    __extends(AEIdFactory, _super);
+
+    AEIdFactory.prototype._guids = null;
+
+    /*
+          constructor: called on singleton's new instance creation
+    */
+
+
+    function AEIdFactory() {
+      this._guids = [];
+    }
+
+    /*
+          has: checks if param guid has already been registered
+          @param {String} the GUID to be checked
+    */
+
+
+    AEIdFactory.prototype.has = function(guid) {
+      if (this._guids.indexOf(guid.toString()) > -1) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    /*
+        @return {Boolean} a brand new and unique GUID
+    */
+
+
+    AEIdFactory.prototype.getGUID = function() {
+      var newguid;
+      newguid = this.guid();
+      if (!this.has(newguid)) {
+        this._guids.push(newguid);
+      } else {
+        newguid = this.getGUID();
+      }
+      return newguid;
+    };
+
+    /*
+          GUID GENERATION FUNCTIONS
+    */
+
+
+    AEIdFactory.prototype.s4 = function() {
+      return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    };
+
+    AEIdFactory.prototype.guid = function() {
+      return this.s4() + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + this.s4() + this.s4();
+    };
+
+    return AEIdFactory;
+
+  })(AESingleton);
+
+  AEController = (function(_super) {
+
+    __extends(AEController, _super);
+
+    function AEController() {
+      return AEController.__super__.constructor.apply(this, arguments);
+    }
+
+    AEController.prototype.init = function() {};
+
+    return AEController;
+
+  })(AEObject);
+
+  AEModel = (function(_super) {
+
+    __extends(AEModel, _super);
+
+    function AEModel() {
+      return AEModel.__super__.constructor.apply(this, arguments);
+    }
+
+    AEModel.prototype._propertyChangedEvent = null;
+
+    AEModel.prototype.init = function() {
+      return this._propertyChangedEvent = new AEEvent(this);
+    };
+
+    /*
+        get property value
+    */
+
+
+    AEModel.prototype.get = function(key) {
+      return this[key];
+    };
+
+    /*
+    		sets the key property with the value passed
+    */
+
+
+    AEModel.prototype.set = function(key, value) {
+      this[key] = value;
+      return this.notifyPropertyChanged(key);
+    };
+
+    /*
+        notifyPropertyChanged:
+    			notifies subscribers that a property was modified
+    */
+
+
+    AEModel.prototype.notifyPropertyChanged = function(property) {
+      return this._propertyChangedEvent.notify({
+        'property': property
+      });
+    };
+
+    return AEModel;
+
+  })(AEObject);
+
+  AEView = (function(_super) {
+
+    __extends(AEView, _super);
+
+    function AEView() {
+      return AEView.__super__.constructor.apply(this, arguments);
+    }
+
+    AEView.prototype.init = function() {};
+
+    return AEView;
+
+  })(AEObject);
+
+  /*
+    AEMessageBox:
+      A message box accessible by every object
+  
+    @extend AEngine.AEWorker
+  */
+
+
+  AEMessageBox = (function(_super) {
+
+    __extends(AEMessageBox, _super);
+
+    function AEMessageBox() {
+      return AEMessageBox.__super__.constructor.apply(this, arguments);
+    }
+
+    AEMessageBox.prototype._messages = null;
+
+    /*
+        @param {String} dest : the guid for the message recipient
+        @param {String} message : self explanatory
+    */
+
+
+    AEMessageBox.prototype.post = function(dest, message) {
+      return this._messages[dest].push(message);
+    };
+
+    /*
+        @param {String} dest : the guid for the message recipient
+        @return {Array.<String>} an array containing all the messages since the last update
+    */
+
+
+    AEMessageBox.prototype.get = function(dest) {
+      return this._messages[dest];
+    };
+
+    /*
+        @param {string} dest : the guid for the message recipient
+    */
+
+
+    AEMessageBox.prototype.flush = function(dest) {
+      return this._messages[dest] = [];
+    };
+
+    return AEMessageBox;
+
+  })(AEWorker);
+
+  AEPhaseStatusEnum = Object.freeze({
     ACTIVE: 0,
     PAUSED: 1
   });
@@ -186,7 +396,7 @@
 
     __extends(AEGamePhase, _super);
 
-    AEGamePhase.prototype._status = StatusEnum.PAUSED;
+    AEGamePhase.prototype._status = AEPhaseStatusEnum.PAUSED;
 
     AEGamePhase.prototype._statusChangedEvent = null;
 
@@ -237,7 +447,7 @@
 
 
     AEGamePhase.prototype.setActive = function() {
-      this._status = StatusEnum.ACTIVE;
+      this._status = AEPhaseStatusEnum.ACTIVE;
       return this.notifyStatusChanged();
     };
 
@@ -247,7 +457,7 @@
 
 
     AEGamePhase.prototype.setUnactive = function() {
-      this._status = StatusEnum.PAUSED;
+      this._status = AEPhaseStatusEnum.PAUSED;
       return this.notifyStatusChanged();
     };
 
@@ -281,10 +491,6 @@
     return AEGamePhase;
 
   })(AEObject);
-
-  AEngine.AEGamePhase = AEGamePhase;
-
-  AEngine.AEGamePhase.StatusEnum = StatusEnum;
 
   /*
     AEGamePhaseManager aims to handle game states and their transitions.
@@ -380,161 +586,6 @@
 
   })(AESingleton);
 
-  AEngine.AEGamePhaseManager = AEGamePhaseManager;
-
-  /*
-    AEIdFactory class aims to handle object identification through the engine via
-    GUIDs
-    This class follows the Singleton design pattern
-    @extend AEEngine.AESingleton
-  */
-
-
-  AEIdFactory = (function(_super) {
-
-    __extends(AEIdFactory, _super);
-
-    AEIdFactory.prototype._guids = null;
-
-    /*
-          constructor: called on singleton's new instance creation
-    */
-
-
-    function AEIdFactory() {
-      this._guids = [];
-    }
-
-    /*
-          has: checks if param guid has already been registered
-          @param {String} the GUID to be checked
-    */
-
-
-    AEIdFactory.prototype.has = function(guid) {
-      if (this._guids.indexOf(guid.toString()) > -1) {
-        return true;
-      } else {
-        return false;
-      }
-    };
-
-    /*
-        @return {Boolean} a brand new and unique GUID
-    */
-
-
-    AEIdFactory.prototype.getGUID = function() {
-      var newguid;
-      newguid = this.guid();
-      if (!this.has(newguid)) {
-        this._guids.push(newguid);
-      } else {
-        newguid = this.getGUID();
-      }
-      return newguid;
-    };
-
-    /*
-          GUID GENERATION FUNCTIONS
-    */
-
-
-    AEIdFactory.prototype.s4 = function() {
-      return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-    };
-
-    AEIdFactory.prototype.guid = function() {
-      return this.s4() + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + this.s4() + this.s4();
-    };
-
-    return AEIdFactory;
-
-  })(AESingleton);
-
-  AEngine.AEIdFactory = AEIdFactory;
-
-  AEController = (function(_super) {
-
-    __extends(AEController, _super);
-
-    function AEController() {
-      return AEController.__super__.constructor.apply(this, arguments);
-    }
-
-    AEController.prototype.init = function() {};
-
-    return AEController;
-
-  })(AEObject);
-
-  AEngine.AEController = AEController;
-
-  AEModel = (function(_super) {
-
-    __extends(AEModel, _super);
-
-    function AEModel() {
-      return AEModel.__super__.constructor.apply(this, arguments);
-    }
-
-    AEModel.prototype._propertyChangedEvent = null;
-
-    AEModel.prototype.init = function() {
-      return this._propertyChangedEvent = new AEEvent(this);
-    };
-
-    /*
-        get property value
-    */
-
-
-    AEModel.prototype.get = function(key) {
-      return this[key];
-    };
-
-    /*
-    		sets the key property with the value passed
-    */
-
-
-    AEModel.prototype.set = function(key, value) {
-      this[key] = value;
-      return this.notifyPropertyChanged(key);
-    };
-
-    /*
-        notifyPropertyChanged:
-    			notifies subscribers that a property was modified
-    */
-
-
-    AEModel.prototype.notifyPropertyChanged = function(property) {
-      return this._propertyChangedEvent.notify({
-        'property': property
-      });
-    };
-
-    return AEModel;
-
-  })(AEObject);
-
-  AEngine.AEModel = AEModel;
-
-  AEView = (function(_super) {
-
-    __extends(AEView, _super);
-
-    function AEView() {
-      return AEView.__super__.constructor.apply(this, arguments);
-    }
-
-    AEView.prototype.init = function() {};
-
-    return AEView;
-
-  })(AEObject);
-
-  AEngine.AEView = AEView;
+  AEngine = window.AEngine = {};
 
 }).call(this);
