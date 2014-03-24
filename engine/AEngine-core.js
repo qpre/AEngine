@@ -1,46 +1,147 @@
+
+/*
+    AEWorker : a JS Worker superclass
+        each instance creates it's own Worker with the script passed as an
+        argument the AEWorker class is the interface for communicating with
+        the Worker
+        TODO: fromFile instantiation
+*/
+
+
+/*
+    AEObject: a base class for every object in the engine
+*/
+
+
 (function() {
-  var AEController, AEEvent, AEGamePhase, AEGamePhaseManager, AEIdFactory, AEMessageBox, AEModel, AEObject, AESingleton, AEView, AEWorker, AEngine, StatusEnum,
+  var AEController, AEEvent, AEGamePhase, AEGamePhaseManager, AEIdFactory, AEModel, AEObject, AESingleton, AEView, AEngine, StatusEnum,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  AEngine = window.AEngine = {};
+  AEObject = (function() {
 
+    AEObject.prototype._guid = null;
+
+    /*
+        Ctor : each gives an object its own unique guid
+    */
+
+
+    function AEObject() {
+      this._guid = AEngine.AEIdFactory.getInstance().getGUID();
+    }
+
+    /*
+        Init: default initializer for object
+        this method is called upon instanciation of a new object of such class
+    */
+
+
+    AEObject.prototype.init = function() {};
+
+    /*
+        guid(): a public getter for the object's guid
+    */
+
+
+    AEObject.prototype.guid = function() {
+      return this._guid;
+    };
+
+    /*
+        create: creates a new instance for the given object
+                passes possible arguments to the objects init
+                function.
+                except for exceptions, EVERY instance should
+                be created using this method
+    
+        @return {Object} an instance of the inherriting class
+    */
+
+
+    AEObject.create = function() {
+      var C, inst;
+      C = this;
+      inst = new C();
+      if (arguments.length > 0) {
+        inst.init(arguments);
+      } else {
+        inst.init();
+      }
+      return inst;
+    };
+
+    return AEObject;
+
+  })();
+
+  AEngine.AEObject = AEObject;
+
+  /*
+    Simple Singleton implementation
+  */
+
+
+  AESingleton = (function() {
+
+    function AESingleton() {}
+
+    AESingleton._instance = null;
+
+    /*
+        @return {Object} an instance of the inheritting object
+    */
+
+
+    AESingleton.getInstance = function() {
+      return this._instance || (this._instance = new this());
+    };
+
+    return AESingleton;
+
+  })();
+
+  AEngine.AESingleton = AESingleton;
+
+  AEngine = window.AEngine = {};
 
   /*
       A simple Observer pattern design implementation
-   */
+  */
+
 
   AEEvent = (function() {
+
     AEEvent.prototype._subscribers = null;
 
     AEEvent.prototype._sender = null;
 
-
     /*
-        constructor: called on instance creation
-        @param {Object} the event's sender
-     */
+          constructor: called on instance creation
+          @param {Object} the event's sender
+    */
+
 
     function AEEvent(_sender) {
       this._sender = _sender;
       this._subscribers = [];
     }
 
-
     /*
-        subscribe: adds a new object to the distribution list
-        @param {Object} the listener object to be added
-     */
+          subscribe: adds a new object to the distribution list
+          @param {Object} the listener object to be added
+    */
+
 
     AEEvent.prototype.subscribe = function(listener) {
       return this._subscribers.push(listener);
     };
 
-
     /*
-      notify: distributes args to every subscriber
-      @param {Object} args : an object containing the messages' arguments
-     */
+        notify: distributes args to every subscriber
+        @param {Object} args : an object containing the messages' arguments
+    */
+
 
     AEEvent.prototype.notify = function(args) {
       var i, _i, _ref, _results;
@@ -62,29 +163,30 @@
     PAUSED: 1
   });
 
-
   /*
     AEGamePhase :
       represents a single state for the engine
     @extends AEngine.AEObject
-   */
+  */
+
 
   AEGamePhase = (function(_super) {
+
     __extends(AEGamePhase, _super);
 
     AEGamePhase.prototype._status = StatusEnum.PAUSED;
 
     AEGamePhase.prototype._statusChangedEvent = null;
 
-
     /*
-      Constructor:
+        Constructor:
     
-      @param {String} _name : A human readable name
-      @param {Function} _in : the function to be triggered when when entering the state
-      @param {Function} _out : the function to be triggered when when leaving the state
-      @param {Function} _run : the function handling the state
-     */
+        @param {String} _name : A human readable name
+        @param {Function} _in : the function to be triggered when when entering the state
+        @param {Function} _out : the function to be triggered when when leaving the state
+        @param {Function} _run : the function handling the state
+    */
+
 
     function AEGamePhase(_name, _in, _out, _run) {
       this._name = _name;
@@ -95,12 +197,12 @@
       this._statusChangedEvent.subscribe(this.onStatusChanged);
     }
 
-
     /*
-      dispatches a statusChangedEvent
+        dispatches a statusChangedEvent
     
-      @event statusChangedEvent
-     */
+        @event statusChangedEvent
+    */
+
 
     AEGamePhase.prototype.notifyStatusChanged = function() {
       return this._statusChangedEvent.notify({
@@ -108,57 +210,57 @@
       });
     };
 
-
     /*
-      Override me to unleash the kraken
-     */
+        Override me to unleash the kraken
+    */
+
 
     AEGamePhase.prototype.onStatusChanged = function(sender, args) {
       return console.log("status changed to :" + args.status);
     };
 
-
     /*
-      self explanatory
-     */
+        self explanatory
+    */
+
 
     AEGamePhase.prototype.setActive = function() {
       this._status = StatusEnum.ACTIVE;
       return this.notifyStatusChanged();
     };
 
-
     /*
-      self explanatory
-     */
+        self explanatory
+    */
+
 
     AEGamePhase.prototype.setUnactive = function() {
       this._status = StatusEnum.PAUSED;
       return this.notifyStatusChanged();
     };
 
-
     /*
-      self explanatory
-     */
+        self explanatory
+    */
+
 
     AEGamePhase.prototype["in"] = function() {
       return this._in();
     };
 
-
     /*
-      self explanatory
-     */
+        self explanatory
+    */
+
 
     AEGamePhase.prototype.out = function() {
       return this._out();
     };
 
-
     /*
-      self explanatory
-     */
+        self explanatory
+    */
+
 
     AEGamePhase.prototype.run = function() {
       return this._run();
@@ -172,15 +274,16 @@
 
   AEngine.AEGamePhase.StatusEnum = StatusEnum;
 
-
   /*
     AEGamePhaseManager aims to handle game states and their transitions.
   
     @extend AESingleton
     TODO: Add some error checking in case of failing to transit
-   */
+  */
+
 
   AEGamePhaseManager = (function(_super) {
+
     __extends(AEGamePhaseManager, _super);
 
     AEGamePhaseManager.prototype._phases = null;
@@ -191,11 +294,11 @@
       this._phases = {};
     }
 
-
     /*
-      @param {String} phase : the name of the game phase to check for
-      @return {Boolean} (true|false) depending on whether the manager knows about it or not
-     */
+        @param {String} phase : the name of the game phase to check for
+        @return {Boolean} (true|false) depending on whether the manager knows about it or not
+    */
+
 
     AEGamePhaseManager.prototype.has = function(phase) {
       if (this._phases.hasOwnProperty(phase)) {
@@ -205,16 +308,16 @@
       }
     };
 
-
     /*
-      addPhase :
-        creates a phase for the game, based on the following parameters
+        addPhase :
+          creates a phase for the game, based on the following parameters
     
-      @param {String} name : a name for the phase MUST BE UNIQUE
-      @param {Function} actionIn : the action to perform when entering the state
-      @param {Function} actionOut : the action to perform when leaving the state
-      @param {Function} run : the action to perform when running the state
-     */
+        @param {String} name : a name for the phase MUST BE UNIQUE
+        @param {Function} actionIn : the action to perform when entering the state
+        @param {Function} actionOut : the action to perform when leaving the state
+        @param {Function} run : the action to perform when running the state
+    */
+
 
     AEGamePhaseManager.prototype.addPhase = function(name, actionIn, actionOut, run) {
       if (this.has(name)) {
@@ -224,13 +327,13 @@
       }
     };
 
-
     /*
-      setCurrent:
-        gets straight to state specified
+        setCurrent:
+          gets straight to state specified
     
-      @param {String} current : the state to be set as the current one
-     */
+        @param {String} current : the state to be set as the current one
+    */
+
 
     AEGamePhaseManager.prototype.setCurrent = function(current) {
       if (this.has(current.toString())) {
@@ -243,13 +346,13 @@
       }
     };
 
-
     /*
-      setCurrent:
-       gets to the specified state by appliying the transitions (if any were associated with the states)
+        setCurrent:
+         gets to the specified state by appliying the transitions (if any were associated with the states)
     
-      @param {String} next : the state to be set as the current one
-     */
+        @param {String} next : the state to be set as the current one
+    */
+
 
     AEGamePhaseManager.prototype.transitionTo = function(next) {
       if (this._current === null) {
@@ -267,33 +370,34 @@
 
   AEngine.AEGamePhaseManager = AEGamePhaseManager;
 
-
   /*
     AEIdFactory class aims to handle object identification through the engine via
     GUIDs
     This class follows the Singleton design pattern
     @extend AEEngine.AESingleton
-   */
+  */
+
 
   AEIdFactory = (function(_super) {
+
     __extends(AEIdFactory, _super);
 
     AEIdFactory.prototype._guids = null;
 
-
     /*
-        constructor: called on singleton's new instance creation
-     */
+          constructor: called on singleton's new instance creation
+    */
+
 
     function AEIdFactory() {
       this._guids = [];
     }
 
-
     /*
-        has: checks if param guid has already been registered
-        @param {String} the GUID to be checked
-     */
+          has: checks if param guid has already been registered
+          @param {String} the GUID to be checked
+    */
+
 
     AEIdFactory.prototype.has = function(guid) {
       if (this._guids.indexOf(guid.toString()) > -1) {
@@ -303,10 +407,10 @@
       }
     };
 
-
     /*
-      @return {Boolean} a brand new and unique GUID
-     */
+        @return {Boolean} a brand new and unique GUID
+    */
+
 
     AEIdFactory.prototype.getGUID = function() {
       var newguid;
@@ -319,10 +423,10 @@
       return newguid;
     };
 
-
     /*
-        GUID GENERATION FUNCTIONS
-     */
+          GUID GENERATION FUNCTIONS
+    */
+
 
     AEIdFactory.prototype.s4 = function() {
       return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
@@ -339,6 +443,7 @@
   AEngine.AEIdFactory = AEIdFactory;
 
   AEController = (function(_super) {
+
     __extends(AEController, _super);
 
     function AEController() {
@@ -354,6 +459,7 @@
   AEngine.AEController = AEController;
 
   AEModel = (function(_super) {
+
     __extends(AEModel, _super);
 
     function AEModel() {
@@ -366,30 +472,30 @@
       return this._propertyChangedEvent = new AEEvent(this);
     };
 
-
     /*
-      get property value
-     */
+        get property value
+    */
+
 
     AEModel.prototype.get = function(key) {
       return this[key];
     };
 
-
     /*
     		sets the key property with the value passed
-     */
+    */
+
 
     AEModel.prototype.set = function(key, value) {
       this[key] = value;
       return this.notifyPropertyChanged(key);
     };
 
-
     /*
-      notifyPropertyChanged:
+        notifyPropertyChanged:
     			notifies subscribers that a property was modified
-     */
+    */
+
 
     AEModel.prototype.notifyPropertyChanged = function(property) {
       return this._propertyChangedEvent.notify({
@@ -404,6 +510,7 @@
   AEngine.AEModel = AEModel;
 
   AEView = (function(_super) {
+
     __extends(AEView, _super);
 
     function AEView() {
@@ -417,187 +524,5 @@
   })(AEObject);
 
   AEngine.AEView = AEView;
-
-
-  /*
-    AEMessageBox:
-      A message box accessible by every object
-  
-    @extend AEngine.AEWorker
-   */
-
-  AEMessageBox = (function(_super) {
-    __extends(AEMessageBox, _super);
-
-    function AEMessageBox() {
-      return AEMessageBox.__super__.constructor.apply(this, arguments);
-    }
-
-    AEMessageBox.prototype._messages = null;
-
-
-    /*
-      @param {String} dest : the guid for the message recipient
-      @param {String} message : self explanatory
-     */
-
-    AEMessageBox.prototype.post = function(dest, message) {
-      return this._messages[dest].push(message);
-    };
-
-
-    /*
-      @param {String} dest : the guid for the message recipient
-      @return {Array.<String>} an array containing all the messages since the last update
-     */
-
-    AEMessageBox.prototype.get = function(dest) {
-      return this._messages[dest];
-    };
-
-
-    /*
-      @param {string} dest : the guid for the message recipient
-     */
-
-    AEMessageBox.prototype.flush = function(dest) {
-      return this._messages[dest] = [];
-    };
-
-    return AEMessageBox;
-
-  })(AEWorker);
-
-  AEngine.AEMessageBox = AEMessageBox;
-
-
-  /*
-      AEObject: a base class for every object in the engine
-   */
-
-  AEObject = (function() {
-    AEObject.prototype._guid = null;
-
-
-    /*
-      Ctor : each gives an object its own unique guid
-     */
-
-    function AEObject() {
-      this._guid = AEngine.AEIdFactory.getInstance().getGUID();
-    }
-
-
-    /*
-      Init: default initializer for object
-      this method is called upon instanciation of a new object of such class
-     */
-
-    AEObject.prototype.init = function() {};
-
-
-    /*
-      guid(): a public getter for the object's guid
-     */
-
-    AEObject.prototype.guid = function() {
-      return this._guid;
-    };
-
-
-    /*
-      create: creates a new instance for the given object
-              passes possible arguments to the objects init
-              function.
-              except for exceptions, EVERY instance should
-              be created using this method
-    
-      @return {Object} an instance of the inherriting class
-     */
-
-    AEObject.create = function() {
-      var C, inst;
-      C = this;
-      inst = new C();
-      if (arguments.length > 0) {
-        inst.init(arguments);
-      } else {
-        inst.init();
-      }
-      return inst;
-    };
-
-    return AEObject;
-
-  })();
-
-  AEngine.AEObject = AEObject;
-
-
-  /*
-    Simple Singleton implementation
-   */
-
-  AESingleton = (function() {
-    function AESingleton() {}
-
-    AESingleton._instance = null;
-
-
-    /*
-      @return {Object} an instance of the inheritting object
-     */
-
-    AESingleton.getInstance = function() {
-      return this._instance || (this._instance = new this());
-    };
-
-    return AESingleton;
-
-  })();
-
-  AEngine.AESingleton = AESingleton;
-
-
-  /*
-      AEWorker : a JS Worker superclass
-          each instance creates it's own Worker with the script passed as an
-          argument the AEWorker class is the interface for communicating with
-          the Worker
-          TODO: fromFile instantiation
-   */
-
-  AEWorker = (function(_super) {
-    __extends(AEWorker, _super);
-
-    function AEWorker() {
-      return AEWorker.__super__.constructor.apply(this, arguments);
-    }
-
-    AEWorker.prototype._worker = null;
-
-    AEWorker.prototype.init = function(script) {
-      var blob, blobURL;
-      blob = new Blob([script], {
-        type: 'application/javascript'
-      });
-      blobURL = URL.createObjectURL(blob);
-      this._worker = new Worker(blobURL);
-      return URL.revokeObjectURL(blobURL);
-    };
-
-    AEWorker.prototype.onMessage = function(callback) {
-      return this._worker.onmessage = callback;
-    };
-
-    AEWorker.prototype.postMessage = function(message) {
-      return this._worker.postMessage(message);
-    };
-
-    return AEWorker;
-
-  })(AEObject);
-
-  AEngine.AEWorker = AEWorker;
 
 }).call(this);
