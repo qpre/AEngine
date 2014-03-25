@@ -41,6 +41,12 @@ class AE.States.GamePhaseManager extends AE.Singleton
       @_phases[name] = new AE.States.GamePhase(name, actionIn, actionOut, run)
 
   ###
+    current: returns the name of the current state
+  ###
+  current: () ->
+    @_current
+
+  ###
     setCurrent:
       gets straight to state specified
 
