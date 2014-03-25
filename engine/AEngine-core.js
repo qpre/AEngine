@@ -452,6 +452,15 @@ var AE = {'MVC':{},'States':{}};
     };
 
     /*
+        current: returns the name of the current state
+    */
+
+
+    GamePhaseManager.prototype.current = function() {
+      return this._current;
+    };
+
+    /*
         setCurrent:
           gets straight to state specified
     
