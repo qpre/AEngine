@@ -270,7 +270,7 @@ var AE = {'MVC':{},'States':{}};
 
     return Model;
 
-  })(AE.Core.Object);
+  })(AE.Object);
 
   AE.MVC.View = (function(_super) {
 
@@ -449,6 +449,15 @@ var AE = {'MVC':{},'States':{}};
       } else {
         return this._phases[name] = new AE.States.GamePhase(name, actionIn, actionOut, run);
       }
+    };
+
+    /*
+        current: returns the name of the current state
+    */
+
+
+    GamePhaseManager.prototype.current = function() {
+      return this._current;
     };
 
     /*
