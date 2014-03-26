@@ -18,12 +18,13 @@ class AE.IdFactory extends AE.Singleton
   ###
       has: checks if param guid has already been registered
       @param {String} the GUID to be checked
+      @return {Boolean} whether the guid was found internally or not
   ###
   has: (guid) ->
     if @_guids.indexOf(guid.toString()) > -1 then true else false
 
   ###
-    @return {Boolean} a brand new and unique GUID
+    @return {String} a brand new and unique GUID
   ###
   getGUID: () ->
     newguid = @guid()
