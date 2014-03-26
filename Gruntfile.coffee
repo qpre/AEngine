@@ -96,17 +96,17 @@ module.exports = (grunt) ->
     shell:
       publish:
         command: [
-          "git clone git@github.com:qpre/AEngine.git ../tmp",
+          "git clone git@github.com:qpre/AEngine.git ../tmp/",
+          "cp -R node_modules ../tmp",
           "cd ../tmp",
-          "npm install",
           "grunt",
           "git fetch origin",
-          "git checkout 'gh-pages'",
-          "git rm -r engine",
+          "git checkout gh-pages",
+          "git rm -rf engine",
           "mv build engine",
           "git add engine",
           "git commit -am '[BLD] automated build'",
-          "git push origin 'gh-pages'",
+          "git push origin gh-pages",
           "cd -",
           "rm -rf ../tmp"
         ].join '&&'
@@ -143,5 +143,5 @@ module.exports = (grunt) ->
   grunt.registerTask "cleanbuild", ["clean:sources", "clean:products"]
   grunt.registerTask "compile" ,["shell:createBuild","bower:install", "toaster:dist", "uglify:all", "copy"]
   grunt.registerTask "build", ["cleanbuild", "compile"]
-  grunt.registerTask "deploy", ["build", "shell:publish"]
+  grunt.registerTask "deploy", ["shell:publish"]
   grunt.registerTask "default", ["build"]
