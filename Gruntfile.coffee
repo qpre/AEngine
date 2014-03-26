@@ -96,13 +96,19 @@ module.exports = (grunt) ->
     shell:
       publish:
         command: [
+          "git clone git@github.com:qpre/AEngine.git ../tmp",
+          "cd ../tmp",
+          "npm install",
+          "grunt",
           "git fetch origin",
           "git checkout 'gh-pages'",
-          "rm -rf engine",
+          "git rm -r engine",
           "mv build engine",
+          "git add engine",
           "git commit -am '[BLD] automated build'",
-          "git push", 
-          "git checkout master"
+          "git push origin 'gh-pages'",
+          "cd -",
+          "rm -rf ../tmp"
         ].join '&&'
         options: {
           stdout: true,
