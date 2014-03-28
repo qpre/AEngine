@@ -9,12 +9,18 @@ module.exports = (grunt) ->
     pkg: grunt.file.readJSON("package.json")
 
     toaster:
-      dist:
+      debug:
         minify: false
         packaging: true
         # bare: true
         folders: { "src/Core":"AE" }
         release: "build/AEngine-core.js"
+      minified:
+        minify: true
+        packaging: true
+        # bare: true
+        folders: { "src/Core":"AE" }
+        release: "build/AEngine-core.min.js"
 
     coffee:
       app:
@@ -128,20 +134,29 @@ module.exports = (grunt) ->
         }
 
   # Load plugins
-  grunt.loadNpmTasks "grunt-contrib-clean"
-  grunt.loadNpmTasks "grunt-contrib-coffee"
-  grunt.loadNpmTasks 'grunt-shell'
-  grunt.loadNpmTasks "grunt-closurecompiler"
-  grunt.loadNpmTasks "grunt-contrib-uglify"
-  grunt.loadNpmTasks "grunt-contrib-copy"
   grunt.loadNpmTasks "grunt-contrib-watch"
-  grunt.loadNpmTasks "grunt-bower-task"
   grunt.loadNpmTasks "grunt-codo"
-  grunt.loadNpmTasks('grunt-coffee-toaster');
 
   # Tasks
-  grunt.registerTask "cleanbuild", ["clean:sources", "clean:products"]
-  grunt.registerTask "compile" ,["shell:createBuild","bower:install", "toaster:dist", "uglify:all", "copy"]
+  grunt.registerTask "cleanbuild", [], () ->
+    grunt.loadNpmTasks "grunt-contrib-clean"
+    grunt.task.run "clean:sources", "clean:products"
+
+  grunt.registerTask "compile" , [], () ->
+    grunt.loadNpmTasks 'grunt-shell'
+    grunt.loadNpmTasks "grunt-bower-task"
+    grunt.loadNpmTasks "grunt-contrib-copy"
+    grunt.loadNpmTasks 'grunt-coffee-toaster'
+    # grunt.loadNpmTasks "grunt-contrib-uglify"
+    # grunt.loadNpmTasks "grunt-contrib-coffee"
+    # grunt.loadNpmTasks "grunt-closurecompiler"
+
+    grunt.task.run "shell:createBuild","bower:install", "toaster", "copy"
+
   grunt.registerTask "build", ["cleanbuild", "compile"]
-  grunt.registerTask "deploy", ["shell:publish"]
+
+  grunt.registerTask "deploy", [], () ->
+    grunt.loadNpmTasks 'grunt-shell'
+    grunt.task.run "shell:publish"
+  
   grunt.registerTask "default", ["build"]
