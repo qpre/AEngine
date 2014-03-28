@@ -163,16 +163,16 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
   AE.Object = (function() {
 
-    Object.prototype._guid = null;
+    function Object() {}
 
-    /*
-        Ctor : each gives an object its own unique guid
-    */
-
-
-    function Object() {
-      this._guid = AE.IdFactory.getInstance().getGUID();
-    }
+    Object.property('_guid', {
+      get: function() {
+        if (!this._guid) {
+          this._guid = AE.IdFactory.getInstance().getGUID();
+        }
+        return this._guid;
+      }
+    });
 
     /*
         Init: default initializer for object
