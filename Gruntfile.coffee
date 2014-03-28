@@ -102,11 +102,13 @@ module.exports = (grunt) ->
     shell:
       publish:
         command: [
+          "rm -rf ../tmp",
           "git clone . ../tmp",
           "cp -R node_modules ../tmp",
           "cd ../tmp",
           "grunt",
-          "git fetch origin",
+          "git fetch",
+          "git branch | echo",
           "git checkout gh-pages",
           "mv build/AEngine-core.js engine/AEngine-core.js",
           "mv build/AEngine-core.min.js engine/AEngine-core.min.js",
