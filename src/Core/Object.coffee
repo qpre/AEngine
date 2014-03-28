@@ -19,7 +19,7 @@ class AE.Object
   ###
   guid: () ->
     if not @_guid then @_guid = AE.IdFactory.getInstance().getGUID()
-      @_guid
+    @_guid
 
   ###
     create: creates a new instance for the given object
