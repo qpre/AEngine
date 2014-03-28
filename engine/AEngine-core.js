@@ -2,12 +2,7 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
 
 /*
-    WorkerManager : a JS Workers managing class
-        each instance creates it's own Worker with the script passed as an
-        argument the AEWorker class is the interface for communicating with
-        the Worker
-        TODO: fromFile instantiation
-        TODO: worker interface
+  Simple Singleton implementation
 */
 
 
@@ -15,43 +10,6 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
   var AEPhaseStatusEnum,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  AE.Workers.WorkersManager = (function(_super) {
-
-    __extends(WorkersManager, _super);
-
-    function WorkersManager() {
-      return WorkersManager.__super__.constructor.apply(this, arguments);
-    }
-
-    WorkersManager.prototype._workers = [];
-
-    WorkersManager.prototype.createFromScript = function(script) {
-      var blob, blobURL, worker;
-      blob = new Blob([script], {
-        type: 'application/javascript'
-      });
-      blobURL = URL.createObjectURL(blob);
-      worker = new Worker(blobURL);
-      this._workers.push(worker);
-      URL.revokeObjectURL(blobURL);
-      return worker;
-    };
-
-    WorkersManager.prototype.createFromClass = function(className, callbackName) {
-      var script;
-      script = "worker = new " + className + "();" + callback(+"();self.onMessage = " + className + ".onMessage;");
-      return this.createFromScript(script);
-    };
-
-    return WorkersManager;
-
-  })(AE.Object);
-
-  /*
-    Simple Singleton implementation
-  */
-
 
   AE.Singleton = (function() {
 
@@ -568,54 +526,5 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
     return View;
 
   })(AE.Object);
-
-  /*
-   MessageBox:
-      A message box accessible by every object
-  */
-
-
-  AE.MessageBox = (function() {
-
-    function MessageBox() {}
-
-    MessageBox.prototype._messages = null;
-
-    /*
-        @param {String} dest : the guid for the message recipient
-        @param {String} message : self explanatory
-    */
-
-
-    MessageBox.prototype.post = function(dest, message) {
-      return this._messages[dest].push(message);
-    };
-
-    /*
-        @param {String} dest : the guid for the message recipient
-        @return {Array.<String>} an array containing all the messages since the last update
-    */
-
-
-    MessageBox.prototype.get = function(dest) {
-      return this._messages[dest];
-    };
-
-    /*
-        @param {string} dest : the guid for the message recipient
-    */
-
-
-    MessageBox.prototype.flush = function(dest) {
-      return this._messages[dest] = [];
-    };
-
-    MessageBox.prototype.onMessage = function(e) {
-      return console.log('hello from MessageBox !');
-    };
-
-    return MessageBox;
-
-  })();
 
 }).call(this);
