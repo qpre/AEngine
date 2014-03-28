@@ -56,6 +56,7 @@ var AE = {'MVC':{},'States':{}};
     /*
           has: checks if param guid has already been registered
           @param {String} the GUID to be checked
+          @return {Boolean} whether the guid was found internally or not
     */
 
 
@@ -68,7 +69,7 @@ var AE = {'MVC':{},'States':{}};
     };
 
     /*
-        @return {Boolean} a brand new and unique GUID
+        @return {String} a brand new and unique GUID
     */
 
 
