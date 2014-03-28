@@ -171,7 +171,7 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
 
     function Object() {
-      this._guid = IdFactory.getInstance().getGUID();
+      this._guid = AE.IdFactory.getInstance().getGUID();
     }
 
     /*
