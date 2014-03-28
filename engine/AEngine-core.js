@@ -448,7 +448,7 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
     Engine.property('PhasesManager', {
       get: function() {
         if (!this._phasesManager) {
-          new AE.States.GamePhasesManager();
+          this._phasesManager = new AE.States.GamePhasesManager();
         }
         return this._phasesManager;
       }
