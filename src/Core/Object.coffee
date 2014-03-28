@@ -6,7 +6,9 @@
 
 class AE.Object
   # @private
-  @property '_guid',
+  _guid: null
+  
+  @property 'guid',
     get: () ->
       if not @_guid then AE.IdFactory.getInstance().getGUID()
       @_guid
@@ -16,12 +18,6 @@ class AE.Object
     this method is called upon instanciation of a new object of such class
   ###
   init: () ->
-
-  ###
-    guid(): a public getter for the object's guid
-  ###
-  guid: () ->
-    @_guid
 
   ###
     create: creates a new instance for the given object
