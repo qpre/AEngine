@@ -6,13 +6,10 @@
 
 class AE.Object
   # @private
-  _guid: null
-
-  ###
-    Ctor : each gives an object its own unique guid
-  ###
-  constructor: () ->
-    @_guid = AE.IdFactory.getInstance().getGUID()
+  @property '_guid',
+    get: () ->
+      if not @_guid then @_guid = AE.IdFactory.getInstance().getGUID()
+      @_guid
 
   ###
     Init: default initializer for object
