@@ -1,34 +1,34 @@
-#<< AE/Workers/Manager
+# #<< AE/Workers/Manager
 
-###
- MessageBox:
-    A message box accessible by every object
-###
+# ###
+#  MessageBox:
+#     A message box accessible by every object
+# ###
 
-class AE.MessageBox
-  # @private
-  _messages: null
+# class AE.MessageBox
+#   # @private
+#   _messages: null
 
-  ###
-    @param {String} dest : the guid for the message recipient
-    @param {String} message : self explanatory
-  ###
-  post: (dest, message) ->
-    @_messages[dest].push message
+#   ###
+#     @param {String} dest : the guid for the message recipient
+#     @param {String} message : self explanatory
+#   ###
+#   post: (dest, message) ->
+#     @_messages[dest].push message
 
-  ###
-    @param {String} dest : the guid for the message recipient
-    @return {Array.<String>} an array containing all the messages since the last update
-  ###
-  get: (dest) ->
-    @_messages[dest]
+#   ###
+#     @param {String} dest : the guid for the message recipient
+#     @return {Array.<String>} an array containing all the messages since the last update
+#   ###
+#   get: (dest) ->
+#     @_messages[dest]
 
-  ###
-    @param {string} dest : the guid for the message recipient
-  ###
-  flush: (dest) ->
-    @_messages[dest] = [] # TODO: Avoid garbage collector by finding a smarte approach
+#   ###
+#     @param {string} dest : the guid for the message recipient
+#   ###
+#   flush: (dest) ->
+#     @_messages[dest] = [] # TODO: Avoid garbage collector by finding a smarte approach
 
 
-  onMessage: (e) ->
-  	console.log 'hello from MessageBox !'
+#   onMessage: (e) ->
+#   	console.log 'hello from MessageBox !'
