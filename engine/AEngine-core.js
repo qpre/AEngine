@@ -234,10 +234,6 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
     __extends(GamePhase, _super);
 
-    function GamePhase() {
-      return GamePhase.__super__.constructor.apply(this, arguments);
-    }
-
     GamePhase.prototype._status = AEPhaseStatusEnum.PAUSED;
 
     GamePhase.prototype._statusChangedEvent = null;
@@ -252,14 +248,14 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
     */
 
 
-    GamePhase.prototype.init = function(_name, _in, _out, _run) {
+    function GamePhase(_name, _in, _out, _run) {
       this._name = _name;
       this._in = _in;
       this._out = _out;
       this._run = _run;
       this._statusChangedEvent = new AE.Event(this);
-      return this._statusChangedEvent.subscribe(this.onStatusChanged);
-    };
+      this._statusChangedEvent.subscribe(this.onStatusChanged);
+    }
 
     /*
         dispatches a statusChangedEvent
