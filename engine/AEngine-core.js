@@ -165,7 +165,9 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
     function Object() {}
 
-    Object.property('_guid', {
+    Object.prototype._guid = null;
+
+    Object.property('guid', {
       get: function() {
         if (!this._guid) {
           AE.IdFactory.getInstance().getGUID();
@@ -181,15 +183,6 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
 
     Object.prototype.init = function() {};
-
-    /*
-        guid(): a public getter for the object's guid
-    */
-
-
-    Object.prototype.guid = function() {
-      return this._guid;
-    };
 
     /*
         create: creates a new instance for the given object
