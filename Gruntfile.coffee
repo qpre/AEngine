@@ -102,7 +102,7 @@ module.exports = (grunt) ->
     shell:
       publish:
         command: [
-          "git clone git@github.com:qpre/AEngine.git ../tmp/",
+          "git clone . ../tmp",
           "cp -R node_modules ../tmp",
           "cd ../tmp",
           "grunt",
