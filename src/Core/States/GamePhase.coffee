@@ -25,7 +25,7 @@ class AE.States.GamePhase extends AE.Object
     @param {Function} _out : the function to be triggered when when leaving the state
     @param {Function} _run : the function handling the state
   ###
-  init: (@_name, @_in, @_out, @_run) ->
+  constructor: (@_name, @_in, @_out, @_run) ->
     @_statusChangedEvent = new AE.Event(@)
     @_statusChangedEvent.subscribe(@onStatusChanged)
 
