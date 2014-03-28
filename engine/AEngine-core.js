@@ -81,6 +81,10 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
   })();
 
+  Function.prototype.property = function(prop, desc) {
+    return Object.defineProperty(this.prototype, prop, desc);
+  };
+
   /*
     AEIdFactory class aims to handle object identification through the engine via
     GUIDs
@@ -441,15 +445,17 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
     Engine.prototype._messageBox = null;
 
-    function Engine() {
-      Object.defineProperty(this.PhasesManager, {
-        get: function() {
-          if (!this._phasesManager) {
-            new AE.States.GamePhasesManager();
-          }
-          return this._phasesManager;
+    Engine.property('PhasesManager', {
+      get: function() {
+        if (!this._phasesManager) {
+          new AE.States.GamePhasesManager();
         }
-      });
+        return this._phasesManager;
+      }
+    });
+
+    function Engine() {
+      console.log("instantiating new engine !");
     }
 
     return Engine;
