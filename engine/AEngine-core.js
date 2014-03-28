@@ -165,7 +165,14 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
     function Object() {}
 
-    Object.prototype._guid = null;
+    Object.property('_guid', {
+      get: function() {
+        if (!this._guid) {
+          AE.IdFactory.getInstance().getGUID();
+        }
+        return this._guid;
+      }
+    });
 
     /*
         Init: default initializer for object
@@ -181,9 +188,6 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
 
     Object.prototype.guid = function() {
-      if (!this._guid) {
-        this._guid = AE.IdFactory.getInstance().getGUID();
-      }
       return this._guid;
     };
 
