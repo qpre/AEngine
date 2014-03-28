@@ -8,7 +8,7 @@ class AE.Engine extends AE.Object
 
 	@property 'PhasesManager',
 		get: () -> 
-			if (!@_phasesManager) then new AE.States.GamePhasesManager()
+			if (!@_phasesManager) then @_phasesManager = new AE.States.GamePhasesManager()
 			@_phasesManager
 
 	constructor: () ->
