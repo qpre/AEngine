@@ -165,7 +165,7 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
     function Object() {}
 
-    Object.prototype.guid = null;
+    Object.prototype._guid = null;
 
     /*
         Init: default initializer for object
