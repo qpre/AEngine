@@ -172,7 +172,16 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
     Engine.prototype.MessageBox = null;
 
     function Engine() {
-      this.PhasesManager = new AE.States.GamePhasesManager();
+      Object.defineProperties(this.prototype, {
+        PhasesManager: {
+          get: function() {
+            if (!this.PhasesManager) {
+              new AE.States.GamePhasesManager();
+            }
+            return this.PhasesManager;
+          }
+        }
+      });
     }
 
     return Engine;
