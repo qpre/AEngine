@@ -437,19 +437,17 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
     __extends(Engine, _super);
 
-    Engine.prototype.PhasesManager = null;
+    Engine.prototype._phasesManager = null;
 
-    Engine.prototype.MessageBox = null;
+    Engine.prototype._messageBox = null;
 
     function Engine() {
-      Object.defineProperties(this.prototype, {
-        PhasesManager: {
-          get: function() {
-            if (!this.PhasesManager) {
-              new AE.States.GamePhasesManager();
-            }
-            return this.PhasesManager;
+      Object.defineProperty(this.PhasesManager, {
+        get: function() {
+          if (!this._phasesManager) {
+            new AE.States.GamePhasesManager();
           }
+          return this._phasesManager;
         }
       });
     }
