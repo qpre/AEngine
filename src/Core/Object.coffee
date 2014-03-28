@@ -12,7 +12,7 @@ class AE.Object
     Ctor : each gives an object its own unique guid
   ###
   constructor: () ->
-    @_guid = IdFactory.getInstance().getGUID()
+    @_guid = AE.IdFactory.getInstance().getGUID()
 
   ###
     Init: default initializer for object
