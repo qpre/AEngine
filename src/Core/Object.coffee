@@ -6,7 +6,10 @@
 
 class AE.Object
   # @private
-  _guid: null
+  @property '_guid',
+    get: () ->
+      if not @_guid then AE.IdFactory.getInstance().getGUID()
+      @_guid
 
   ###
     Init: default initializer for object
@@ -18,7 +21,6 @@ class AE.Object
     guid(): a public getter for the object's guid
   ###
   guid: () ->
-    if not @_guid then @_guid = AE.IdFactory.getInstance().getGUID()
     @_guid
 
   ###
