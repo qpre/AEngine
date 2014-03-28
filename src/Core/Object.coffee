@@ -6,7 +6,7 @@
 
 class AE.Object
   # @private
-  guid: null
+  _guid: null
 
   ###
     Init: default initializer for object
