@@ -31,6 +31,57 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
   })();
 
   /*
+      A simple Observer pattern design implementation
+  */
+
+
+  AE.Event = (function() {
+
+    Event.prototype._subscribers = null;
+
+    Event.prototype._sender = null;
+
+    /*
+          constructor: called on instance creation
+          @param {Object} the event's sender
+    */
+
+
+    function Event(_sender) {
+      this._sender = _sender;
+      this._subscribers = [];
+    }
+
+    /*
+          subscribe: adds a new object to the distribution list
+          @param {Object} the listener object to be added
+    */
+
+
+    Event.prototype.subscribe = function(listener) {
+      return this._subscribers.push(listener);
+    };
+
+    /*
+        notify: distributes args to every subscriber
+        @param {Object} args : an object containing the messages' arguments
+    */
+
+
+    Event.prototype.notify = function(args) {
+      var i, _i, _ref, _results;
+      _results = [];
+      for (i = _i = 0, _ref = this._subscribers.length - 1; _i <= _ref; i = _i += 1) {
+        _results.push(this._subscribers[i](this._sender, args));
+      }
+      return _results;
+    };
+
+    return Event;
+
+  })();
+
+  /*
     AEIdFactory class aims to handle object identification through the engine via
     GUIDs
     This class follows the Singleton design pattern
@@ -163,155 +214,6 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
   })();
 
-  AE.Engine = (function(_super) {
-
-    __extends(Engine, _super);
-
-    Engine.prototype.PhasesManager = null;
-
-    Engine.prototype.MessageBox = null;
-
-    function Engine() {
-      Object.defineProperties(this.prototype, {
-        PhasesManager: {
-          get: function() {
-            if (!this.PhasesManager) {
-              new AE.States.GamePhasesManager();
-            }
-            return this.PhasesManager;
-          }
-        }
-      });
-    }
-
-    return Engine;
-
-  })(AE.Object);
-
-  /*
-      A simple Observer pattern design implementation
-  */
-
-
-  AE.Event = (function() {
-
-    Event.prototype._subscribers = null;
-
-    Event.prototype._sender = null;
-
-    /*
-          constructor: called on instance creation
-          @param {Object} the event's sender
-    */
-
-
-    function Event(_sender) {
-      this._sender = _sender;
-      this._subscribers = [];
-    }
-
-    /*
-          subscribe: adds a new object to the distribution list
-          @param {Object} the listener object to be added
-    */
-
-
-    Event.prototype.subscribe = function(listener) {
-      return this._subscribers.push(listener);
-    };
-
-    /*
-        notify: distributes args to every subscriber
-        @param {Object} args : an object containing the messages' arguments
-    */
-
-
-    Event.prototype.notify = function(args) {
-      var i, _i, _ref, _results;
-      _results = [];
-      for (i = _i = 0, _ref = this._subscribers.length - 1; _i <= _ref; i = _i += 1) {
-        _results.push(this._subscribers[i](this._sender, args));
-      }
-      return _results;
-    };
-
-    return Event;
-
-  })();
-
-  AE.MVC.Controller = (function() {
-
-    function Controller() {}
-
-    Controller.prototype.init = function() {};
-
-    return Controller;
-
-  })();
-
-  AE.MVC.Model = (function(_super) {
-
-    __extends(Model, _super);
-
-    function Model() {
-      return Model.__super__.constructor.apply(this, arguments);
-    }
-
-    Model.prototype._propertyChangedEvent = null;
-
-    Model.prototype.init = function() {
-      return this._propertyChangedEvent = new AE.Event(this);
-    };
-
-    /*
-        get property value
-    */
-
-
-    Model.prototype.get = function(key) {
-      return this[key];
-    };
-
-    /*
-    		sets the key property with the value passed
-    */
-
-
-    Model.prototype.set = function(key, value) {
-      this[key] = value;
-      return this.notifyPropertyChanged(key);
-    };
-
-    /*
-        notifyPropertyChanged:
-    			notifies subscribers that a property was modified
-    */
-
-
-    Model.prototype.notifyPropertyChanged = function(property) {
-      return this._propertyChangedEvent.notify({
-        'property': property
-      });
-    };
-
-    return Model;
-
-  })(AE.Object);
-
-  AE.MVC.View = (function(_super) {
-
-    __extends(View, _super);
-
-    function View() {
-      return View.__super__.constructor.apply(this, arguments);
-    }
-
-    View.prototype.init = function() {};
-
-    return View;
-
-  })(AE.Object);
-
   AEPhaseStatusEnum = Object.freeze({
     ACTIVE: 0,
     PAUSED: 1
@@ -425,6 +327,207 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
     };
 
     return GamePhase;
+
+  })(AE.Object);
+
+  /*
+    AEGamePhasesManager aims to handle game states and their transitions.
+  
+    @extend AESingleton
+    TODO: Add some error checking in case of failing to transit
+  */
+
+
+  AE.States.GamePhasesManager = (function(_super) {
+
+    __extends(GamePhasesManager, _super);
+
+    GamePhasesManager.prototype._phases = null;
+
+    GamePhasesManager.prototype._current = null;
+
+    function GamePhasesManager() {
+      this._phases = {};
+    }
+
+    /*
+        @param {String} phase : the name of the game phase to check for
+        @return {Boolean} (true|false) depending on whether the manager knows about it or not
+    */
+
+
+    GamePhasesManager.prototype.has = function(phase) {
+      if (this._phases.hasOwnProperty(phase)) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    /*
+        addPhase :
+          creates a phase for the game, based on the following parameters
+    
+        @param {String} name : a name for the phase MUST BE UNIQUE
+        @param {Function} actionIn : the action to perform when entering the state
+        @param {Function} actionOut : the action to perform when leaving the state
+        @param {Function} run : the action to perform when running the state
+    */
+
+
+    GamePhasesManager.prototype.addPhase = function(name, actionIn, actionOut, run) {
+      if (this.has(name)) {
+        return console.error("Phase " + name + " already exists");
+      } else {
+        return this._phases[name] = new AE.States.GamePhase(name, actionIn, actionOut, run);
+      }
+    };
+
+    /*
+        current: returns the name of the current state
+    */
+
+
+    GamePhasesManager.prototype.current = function() {
+      return this._current;
+    };
+
+    /*
+        setCurrent:
+          gets straight to state specified
+    
+        @param {String} current : the state to be set as the current one
+    */
+
+
+    GamePhasesManager.prototype.setCurrent = function(current) {
+      if (this.has(current.toString())) {
+        this._current = this._phases[current.toString()];
+        this._current.setActive();
+        this._current["in"]();
+        return this._current.run();
+      } else {
+        return console.error("No such phase: " + current);
+      }
+    };
+
+    /*
+        setCurrent:
+         gets to the specified state by appliying the transitions (if any were associated with the states)
+    
+        @param {String} next : the state to be set as the current one
+    */
+
+
+    GamePhasesManager.prototype.transitionTo = function(next) {
+      if (this._current === null) {
+        return console.error("No current phase was set, can't transit from nowhere");
+      } else {
+        this._current.out();
+        this._current.setUnactive();
+        return this.setCurrent(next);
+      }
+    };
+
+    return GamePhasesManager;
+
+  })(AE.Singleton);
+
+  AE.Engine = (function(_super) {
+
+    __extends(Engine, _super);
+
+    Engine.prototype.PhasesManager = null;
+
+    Engine.prototype.MessageBox = null;
+
+    function Engine() {
+      Object.defineProperties(this.prototype, {
+        PhasesManager: {
+          get: function() {
+            if (!this.PhasesManager) {
+              new AE.States.GamePhasesManager();
+            }
+            return this.PhasesManager;
+          }
+        }
+      });
+    }
+
+    return Engine;
+
+  })(AE.Object);
+
+  AE.MVC.Controller = (function() {
+
+    function Controller() {}
+
+    Controller.prototype.init = function() {};
+
+    return Controller;
+
+  })();
+
+  AE.MVC.Model = (function(_super) {
+
+    __extends(Model, _super);
+
+    function Model() {
+      return Model.__super__.constructor.apply(this, arguments);
+    }
+
+    Model.prototype._propertyChangedEvent = null;
+
+    Model.prototype.init = function() {
+      return this._propertyChangedEvent = new AE.Event(this);
+    };
+
+    /*
+        get property value
+    */
+
+
+    Model.prototype.get = function(key) {
+      return this[key];
+    };
+
+    /*
+    		sets the key property with the value passed
+    */
+
+
+    Model.prototype.set = function(key, value) {
+      this[key] = value;
+      return this.notifyPropertyChanged(key);
+    };
+
+    /*
+        notifyPropertyChanged:
+    			notifies subscribers that a property was modified
+    */
+
+
+    Model.prototype.notifyPropertyChanged = function(property) {
+      return this._propertyChangedEvent.notify({
+        'property': property
+      });
+    };
+
+    return Model;
+
+  })(AE.Object);
+
+  AE.MVC.View = (function(_super) {
+
+    __extends(View, _super);
+
+    function View() {
+      return View.__super__.constructor.apply(this, arguments);
+    }
+
+    View.prototype.init = function() {};
+
+    return View;
 
   })(AE.Object);
 
