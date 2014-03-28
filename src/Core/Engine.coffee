@@ -12,4 +12,4 @@ class AE.Engine extends AE.Object
 			@_phasesManager
 
 	constructor: () ->
-		console.log "instantiating new engine !"
+		console.log "instantiating new engine"

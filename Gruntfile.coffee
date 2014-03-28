@@ -106,15 +106,15 @@ module.exports = (grunt) ->
           "git clone . ../tmp",
           "cp -R node_modules ../tmp",
           "cd ../tmp",
+          "git remote add github git@github.com:qpre/AEngine.git",
           "grunt",
-          "git fetch",
-          "git branch | echo",
+          "git fetch github",
           "git checkout gh-pages",
           "mv build/AEngine-core.js engine/AEngine-core.js",
           "mv build/AEngine-core.min.js engine/AEngine-core.min.js",
           "git add engine",
           "git commit -am '[BLD] automated build'",
-          "git push origin gh-pages",
+          "git push github gh-pages",
           "cd -",
           "rm -rf ../tmp"
         ].join '&&'
