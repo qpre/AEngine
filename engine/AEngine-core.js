@@ -455,7 +455,7 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
     });
 
     function Engine() {
-      console.log("instantiating new engine !");
+      console.log("instantiating new engine");
     }
 
     return Engine;
