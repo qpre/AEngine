@@ -11,5 +11,10 @@ class AE.Engine extends AE.Object
 			if (!@_phasesManager) then @_phasesManager = new AE.States.GamePhasesManager()
 			@_phasesManager
 
+	@property 'MessageBox',
+		get: () -> 
+			if (!@_messageBox) then @_messageBox = AE.Workers.Manager.getInstance().createFromClass('AE.MessageBox')
+			@_messageBox
+
 	constructor: () ->
 		console.log "instantiating new engine"

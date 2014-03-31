@@ -1,7 +1,9 @@
+LIVERELOAD_PORT = 35730;
+lrSnippet = require('connect-livereload') ({port: LIVERELOAD_PORT})
+mountFolder = (connect, dir) ->
+    return connect.static require('path').resolve(dir)
+
 module.exports = (grunt) ->
-
-
-
   # Project configuration.
   BANNER =  "/* The A-Engine Core: " + (Date.now()).toString() + " */"
 
@@ -98,7 +100,24 @@ module.exports = (grunt) ->
       coffee:
         files: ["src/**/*.coffee"]
         tasks: ["build"]
+      livereload:
+        options:
+          livereload: LIVERELOAD_PORT
+        files:
+          'build/**/*'
 
+    connect:
+      options:
+        port: 9001
+        hostname: 'localhost'
+      livereload:
+        options:
+          middleware: (connect) ->
+            return [ lrSnippet, mountFolder connect, 'build' ]
+    open:
+      server:
+        path: 'http://localhost:<%= connect.options.port %>'
+          
     shell:
       publish:
         command: [
@@ -118,22 +137,21 @@ module.exports = (grunt) ->
           "cd -",
           "rm -rf ../tmp"
         ].join '&&'
-        options: {
+        options:
           stdout: true,
           failOnError: true
-        }
+
       createBuild:
         command: "mkdir build"
-        options: {
+        options:
           stdout: true,
           failOnError: true
-        }
+
       removeBuild:
         command: "rm -rf build"
-        options: {
+        options:
           stdout: true,
           failOnError: true
-        }
 
   # Load plugins
   grunt.loadNpmTasks "grunt-contrib-watch"
@@ -154,6 +172,15 @@ module.exports = (grunt) ->
     # grunt.loadNpmTasks "grunt-closurecompiler"
 
     grunt.task.run "shell:createBuild","bower:install", "toaster", "copy"
+
+  grunt.registerTask "serve", [], (target) ->
+    grunt.loadNpmTasks 'grunt-open'
+    grunt.loadNpmTasks 'grunt-contrib-connect'
+
+    if (target == 'build')
+      return grunt.task.run ['build', 'open', 'connect:dist:keepalive']
+
+    grunt.task.run ['build', 'connect:livereload','open','watch']
 
   grunt.registerTask "build", ["cleanbuild", "compile"]
 
