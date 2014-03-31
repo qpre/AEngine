@@ -20,7 +20,8 @@ class AE.States.GamePhasesManager extends AE.Singleton
 
   ###
     @param {String} phase : the name of the game phase to check for
-    @return {Boolean} (true|false) depending on whether the manager knows about it or not
+    @return {Boolean} (true|false) depending on whether the manager knows
+    about it or not
   ###
   has: (phase) ->
     if (@_phases.hasOwnProperty phase) then true else false
@@ -63,7 +64,8 @@ class AE.States.GamePhasesManager extends AE.Singleton
 
   ###
     setCurrent:
-     gets to the specified state by appliying the transitions (if any were associated with the states)
+     gets to the specified state by appliying the transitions
+     (if any were associated with the states)
 
     @param {String} next : the state to be set as the current one
   ###

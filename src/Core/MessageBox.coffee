@@ -1,4 +1,4 @@
-#<< AE/Workers/Manager
+#<< AE/Workers/Worker
 
 ###
  MessageBox:
@@ -18,7 +18,8 @@ class AE.MessageBox
 
   ###
     @param {String} dest : the guid for the message recipient
-    @return {Array.<String>} an array containing all the messages since the last update
+    @return {Array.<String>} an array containing all the messages since the last
+    update
   ###
   get: (dest) ->
     @_messages[dest]
@@ -27,8 +28,7 @@ class AE.MessageBox
     @param {string} dest : the guid for the message recipient
   ###
   flush: (dest) ->
-    @_messages[dest] = [] # TODO: Avoid garbage collector by finding a smarte approach
-
+    @_messages[dest] = [] #TODO: Avoid garbage collector
 
   onMessage: (e) ->
-  	self.postMessage 'hello from MessageBox !'
+    self.postMessage 'hello from MessageBox !'

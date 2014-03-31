@@ -28,6 +28,13 @@ module.exports = (grunt) ->
         files:
           "build/AEngine-core.js": ["src/**/*.coffee"]
 
+    coffeelint:
+      app: 
+        files: 
+          src: ["src/**/*.coffee"]
+        options:
+          force: true # pass to false if you want strict 
+
     closurecompiler:
       all:
         files:
@@ -149,6 +156,7 @@ module.exports = (grunt) ->
   # Build process
   grunt.registerTask "compile" , [], () ->
     grunt.loadNpmTasks 'grunt-shell'
+    grunt.loadNpmTasks 'grunt-coffeelint'
     grunt.loadNpmTasks "grunt-bower-task"
     grunt.loadNpmTasks "grunt-contrib-copy"
     grunt.loadNpmTasks 'grunt-coffee-toaster'
@@ -156,7 +164,7 @@ module.exports = (grunt) ->
     # grunt.loadNpmTasks "grunt-contrib-coffee"
     # grunt.loadNpmTasks "grunt-closurecompiler"
 
-    grunt.task.run "shell:createBuild","bower:install", "toaster", "copy"
+    grunt.task.run "coffeelint", "shell:createBuild","bower:install", "toaster", "copy"
 
   grunt.registerTask "build", ["cleanbuild", "compile"]
 

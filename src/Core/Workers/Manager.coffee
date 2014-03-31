@@ -9,6 +9,14 @@
         TODO: worker interface
 ###
 
+
+###
+  new logic:
+    - instantiating worker
+    - send message "ask for context" from worker
+    - on context ready, mark worker as ready
+###
+
 class AE.Workers.Manager extends AE.Singleton
   _workers: []
   _libBlob: null
@@ -23,10 +31,25 @@ class AE.Workers.Manager extends AE.Singleton
 
   #TODO: pass args
   createFromClass: (className) ->
-  	context = JSON.stringify AE # It's so dirty I just can't look at it anymore
+    script = "self.onmessage = function(e) {\n\
+      var data = e.data;\n\
+      switch (data.cmd) {\n\
+        case 'start':\n\
+          self.postMessage('WORKER STARTED: ' + data.msg);\n\
+          break;\n\
+        case 'stop':\n\
+          self.postMessage('WORKER STOPPED: ' + data.msg +'.\
+            (buttons will no longer work)');\n\
+          self.close();\n\
+          break;\n\
+        default:\n\
+          self.postMessage('Unknown command: ' + data.msg);\n\
+        };\n\
+    };\n\
+    "
+    worker = @createFromScript(script)
+    worker.onmessage = @_onWorkerMessage
+    worker.postMessage {'cmd': 'start', 'msg': 'Hi'}
 
-  	script = "AE = eval(\"(#{encodeURIComponent(context)})\");\n
-  			worker = new #{className}();\n
-  			self.onMessage = #{className}.onMessage;"
-
-  	@createFromScript script
+  _onWorkerMessage: (event) ->
+    console.log event.data

@@ -21,8 +21,8 @@ class AE.States.GamePhase extends AE.Object
     Constructor:
 
     @param {String} _name : A human readable name
-    @param {Function} _in : the function to be triggered when when entering the state
-    @param {Function} _out : the function to be triggered when when leaving the state
+    @param {Function} _in : the function to be triggered when entering the state
+    @param {Function} _out : the function to be triggered when leaving the state
     @param {Function} _run : the function handling the state
   ###
   constructor: (@_name, @_in, @_out, @_run) ->
