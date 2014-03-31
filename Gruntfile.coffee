@@ -1,8 +1,3 @@
-LIVERELOAD_PORT = 35730;
-lrSnippet = require('connect-livereload') ({port: LIVERELOAD_PORT})
-mountFolder = (connect, dir) ->
-    return connect.static require('path').resolve(dir)
-
 module.exports = (grunt) ->
   # Project configuration.
   BANNER =  "/* The A-Engine Core: " + (Date.now()).toString() + " */"
@@ -100,24 +95,13 @@ module.exports = (grunt) ->
       coffee:
         files: ["src/**/*.coffee"]
         tasks: ["build"]
-      livereload:
-        options:
-          livereload: LIVERELOAD_PORT
-        files:
-          'build/**/*'
 
     connect:
-      options:
-        port: 9001
-        hostname: 'localhost'
-      livereload:
-        options:
-          middleware: (connect) ->
-            return [ lrSnippet, mountFolder connect, 'build' ]
-    open:
       server:
-        path: 'http://localhost:<%= connect.options.port %>'
-          
+        options:
+          port: 9001,
+          base: 'build'
+
     shell:
       publish:
         command: [
@@ -157,11 +141,12 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-contrib-watch"
   grunt.loadNpmTasks "grunt-codo"
 
-  # Tasks
+  # Clean
   grunt.registerTask "cleanbuild", [], () ->
     grunt.loadNpmTasks "grunt-contrib-clean"
     grunt.task.run "clean:sources", "clean:products"
 
+  # Build process
   grunt.registerTask "compile" , [], () ->
     grunt.loadNpmTasks 'grunt-shell'
     grunt.loadNpmTasks "grunt-bower-task"
@@ -173,19 +158,18 @@ module.exports = (grunt) ->
 
     grunt.task.run "shell:createBuild","bower:install", "toaster", "copy"
 
-  grunt.registerTask "serve", [], (target) ->
-    grunt.loadNpmTasks 'grunt-open'
-    grunt.loadNpmTasks 'grunt-contrib-connect'
-
-    if (target == 'build')
-      return grunt.task.run ['build', 'open', 'connect:dist:keepalive']
-
-    grunt.task.run ['build', 'connect:livereload','open','watch']
-
   grunt.registerTask "build", ["cleanbuild", "compile"]
 
+  # Serve lib to local
+  grunt.registerTask "serve", [], (target) ->
+    grunt.loadNpmTasks 'grunt-contrib-connect'
+
+    grunt.task.run ['build', 'connect', 'watch']
+
+  # Deploy to distant server
   grunt.registerTask "deploy", [], () ->
     grunt.loadNpmTasks 'grunt-shell'
     grunt.task.run "shell:publish"
   
+
   grunt.registerTask "default", ["build"]
