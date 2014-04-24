@@ -1,3 +1,4 @@
+#<< AE/Console
 #<< AE/Object
 #<< AE/Event
 
@@ -41,7 +42,7 @@ class AE.States.GamePhase extends AE.Object
     Override me to unleash the kraken
   ###
   onStatusChanged: (sender, args) ->
-    console.log "status changed to :" + args.status
+    AE.Console.log "status changed to :" + args.status
 
   ###
     self explanatory

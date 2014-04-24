@@ -29,9 +29,15 @@ class AE.Workers.Manager extends AE.Singleton
     URL.revokeObjectURL blobURL
     worker
 
-  #TODO: pass args
-  createFromClass: (className) ->
-    script = "self.onmessage = function(e) {\n\
+  createWithMessagingSystem: () ->
+    script = "
+    self.requestFileSystemSync = \
+      self.webkitRequestFileSystemSync || self.requestFileSystemSync;\n\
+
+    self.resolveLocalFileSystemURL = \
+      self.webkitResolveLocalFileSystemURL || self.resolveLocalFileSystemURL;\n\
+
+    self.onmessage = function(e) {\n\
       var data = e.data;\n\
       switch (data.cmd) {\n\
         case 'start':\n\
@@ -42,6 +48,26 @@ class AE.Workers.Manager extends AE.Singleton
             (buttons will no longer work)');\n\
           self.close();\n\
           break;\n\
+        case 'loadContext':\n\
+          eval(data.msg);\n\
+          console.log(AE);\n\
+        case 'loadFile':\n\
+          try{\n\
+            self.resolveLocalFileSystemURL(data.msg, function(fileEntry) {\n\
+              console.log(fileEntry.name);\n\
+            });\n\
+          } catch (e) {\n\
+            console.error(e);\n\
+          }\n\
+          break;\n\
+        case 'importScript':\n\
+          console.log(data.msg);\n\
+          importScripts(data.msg);\n\
+          self;
+          break;\n\
+        case 'onmessage':\n\
+          self.onmessage = data.msg;\n\
+          break;\n\
         default:\n\
           self.postMessage('Unknown command: ' + data.msg);\n\
         };\n\
@@ -49,7 +75,18 @@ class AE.Workers.Manager extends AE.Singleton
     "
     worker = @createFromScript(script)
     worker.onmessage = @_onWorkerMessage
-    worker.postMessage {'cmd': 'start', 'msg': 'Hi'}
+    mb = new AE.MessageBox()
+    core = AE.Loaders.Manager.getInstance().createURLLoader AE_CORE_PATH, (filepath) ->
+      console.log filepath
+      AE.FileSystem.getInstance().readFile filepath, (file) ->
+        worker.postMessage {
+          'cmd': 'loadContext',
+          'msg': file
+        }
+    core.load()
 
   _onWorkerMessage: (event) ->
     console.log event.data
+
+  sendMessageTo: (index, msg) ->
+    @_workers[index].postMessage msg

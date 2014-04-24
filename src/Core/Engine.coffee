@@ -1,3 +1,4 @@
+#<< AE/Console
 #<< AE/Object
 #<< AE/States/GamePhasesManager
 #<< AE/Helpers
@@ -19,9 +20,10 @@ class AE.Engine extends AE.Object
         .Workers
         .Manager
         .getInstance()
-        .createFromClass('AE.MessageBox')
+        .createWithMessagingSystem()
       @_messageBox
 
-  constructor: () ->
-    console.log "instantiating new engine"
+  constructor: (opts) ->
+
+    AE.Console.log "instantiating new engine"
     @MessageBox = @MessageBox

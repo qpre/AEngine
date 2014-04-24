@@ -1,5 +1,3 @@
-#<< AE/Workers/Worker
-
 ###
  MessageBox:
     A message box accessible by every object

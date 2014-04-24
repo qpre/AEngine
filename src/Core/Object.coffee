@@ -1,3 +1,4 @@
+#<< AE/Helpers
 #<< AE/IdFactory
 
 ###
@@ -10,7 +11,7 @@ class AE.Object
   
   @property 'guid',
     get: () ->
-      if not @_guid then AE.IdFactory.getInstance().getGUID()
+      if @_guid == null then @_guid = AE.IdFactory.getInstance().getGUID()
       @_guid
 
   ###
