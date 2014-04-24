@@ -16,12 +16,11 @@ class AE.Loaders.URLLoader extends AE.Object
     if @_fileURL
       @requestURL()
     else
-      AE.Console.error 'no file URL were specified'
+      AE.error 'no file URL were specified'
 
   requestURL: () ->
     asyncRequestURL @_fileURL, (blob) =>
       AE.FileSystem.getInstance().writeFile @guid, blob, () =>
-        AE.Console.log 'wrote :' + @guid
         @_onSuccess @_filepath
       
 

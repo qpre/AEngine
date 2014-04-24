@@ -42,7 +42,6 @@ class AE.States.GamePhase extends AE.Object
     Override me to unleash the kraken
   ###
   onStatusChanged: (sender, args) ->
-    AE.Console.log "status changed to :" + args.status
 
   ###
     self explanatory

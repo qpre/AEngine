@@ -38,7 +38,7 @@ class AE.States.GamePhasesManager extends AE.Singleton
   ###
   addPhase: (name, actionIn, actionOut, run) ->
     if (@has(name))
-      AE.Console.error "Phase " + name + " already exists"
+      AE.error "Phase " + name + " already exists"
     else
       @_phases[name] = new AE.States.GamePhase(name, actionIn, actionOut, run)
 
@@ -61,7 +61,7 @@ class AE.States.GamePhasesManager extends AE.Singleton
       @_current.in()
       @_current.run()
     else
-      console.error "No such phase: " + current
+      AE.error "No such phase: " + current
 
   ###
     setCurrent:
@@ -73,7 +73,7 @@ class AE.States.GamePhasesManager extends AE.Singleton
 
   transitionTo: (next) ->
     if (@_current == null)
-      AE.Console.error "No current phase was set, can't transit from nowhere"
+      AE.error "No current phase was set, can't transit from nowhere"
     else
       @_current.out()
       @_current.setUnactive()

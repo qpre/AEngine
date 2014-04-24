@@ -18,7 +18,6 @@ class AE.FileSystem extends AE.Singleton
         return
       @_isCreated = false
     @_stack.push callBack
-    console.log 'stacking '+ callBack
 
   writeFile: (filePath, file, onWrite) ->
     if @_filesystem
@@ -54,7 +53,6 @@ class AE.FileSystem extends AE.Singleton
   onInitFS: (fs) ->
     @_filesystem = fs
     @_isCreated = true
-    AE.Console.log 'AE.FILESYSTEM created with name: ' + fs.name
     for callback in @_stack
       callback.call()
     @_stack = []
@@ -73,4 +71,4 @@ class AE.FileSystem extends AE.Singleton
         msg = "INVALID_STATE_ERR"
       else
         msg = "Unknown Error"
-    AE.Console.error 'AE.FILESYSTEM failed with ' + msg
+    AE.error 'AE.FILESYSTEM failed with ' + msg

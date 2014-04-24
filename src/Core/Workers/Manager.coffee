@@ -50,7 +50,6 @@ class AE.Workers.Manager extends AE.Singleton
           break;\n\
         case 'loadContext':\n\
           eval(data.msg);\n\
-          console.log(AE);\n\
         case 'loadFile':\n\
           try{\n\
             self.resolveLocalFileSystemURL(data.msg, function(fileEntry) {\n\
@@ -77,7 +76,6 @@ class AE.Workers.Manager extends AE.Singleton
     worker.onmessage = @_onWorkerMessage
     mb = new AE.MessageBox()
     core = AE.Loaders.Manager.getInstance().createURLLoader AE_CORE_PATH, (filepath) ->
-      console.log filepath
       AE.FileSystem.getInstance().readFile filepath, (file) ->
         worker.postMessage {
           'cmd': 'loadContext',

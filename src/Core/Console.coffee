@@ -1,11 +1,9 @@
-AE.Console = {
-  log: (message) ->
-    console.log message
+AE.log = (message) ->
+  console.log message
 
-  debug: (message) ->
-    console.debug message
+AE.debug = (message) ->
+  console.debug message
 
-  error: (message) ->
-    console.error message
-}
+AE.error = (message) ->
+  console.error message
 
