@@ -76,6 +76,10 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
 
   self.requestFileSystem = self.requestFileSystem || self.webkitRequestFileSystem;
 
+  self.requestFileSystemAsync = self.requestFileSystem || self.webkitRequestFileSystem;
+
+  self.resolveLocalFileSystemURL = self.webkitResolveLocalFileSystemURL || self.resolveLocalFileSystemURL;
+
   AE.FileSystem = (function(_super) {
 
     __extends(FileSystem, _super);
