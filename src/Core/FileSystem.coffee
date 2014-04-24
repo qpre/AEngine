@@ -4,6 +4,12 @@
 self.requestFileSystem = \
   self.requestFileSystem || self.webkitRequestFileSystem
 
+self.requestFileSystemAsync = \
+  self.requestFileSystem || self.webkitRequestFileSystem
+
+self.resolveLocalFileSystemURL = \
+  self.webkitResolveLocalFileSystemURL || self.resolveLocalFileSystemURL;
+
 class AE.FileSystem extends AE.Singleton
   _isCreated: null
   _stack: []
@@ -27,8 +33,6 @@ class AE.FileSystem extends AE.Singleton
           fileWriter.onerror = (e) -> console.error e
           if (onWrite)
             fileWriter.onwrite = onWrite
-          # Convert file contents to a Blob. The contents argument
-          # can be a string or a Blob or an ArrayBuffer.
           blob = new Blob([file])
           fileWriter.write blob
     else
@@ -48,7 +52,6 @@ class AE.FileSystem extends AE.Singleton
     else
       @createFileSystem () =>
         @readFile filePath, onSuccess
-
 
   onInitFS: (fs) ->
     @_filesystem = fs
