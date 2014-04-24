@@ -5,16 +5,16 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  AE.Console = {
-    log: function(message) {
-      return console.log(message);
-    },
-    debug: function(message) {
-      return console.debug(message);
-    },
-    error: function(message) {
-      return console.error(message);
-    }
+  AE.log = function(message) {
+    return console.log(message);
+  };
+
+  AE.debug = function(message) {
+    return console.debug(message);
+  };
+
+  AE.error = function(message) {
+    return console.error(message);
   };
 
   /*
@@ -54,7 +54,7 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
       if (request.status === 200) {
         return onSuccess(request.response);
       } else {
-        return console.error('could\'nt retrieve file: ' + URL);
+        return AE.error('could\'nt retrieve file: ' + URL);
       }
     });
     request.send();
@@ -70,7 +70,7 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
     if (request.status === 200) {
       return onSuccess(request.response);
     } else {
-      return console.error('could\'nt retrieve file: ' + URL);
+      return AE.error('could\'nt retrieve file: ' + URL);
     }
   };
 
@@ -97,8 +97,7 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
         });
         this._isCreated = false;
       }
-      this._stack.push(callBack);
-      return console.log('stacking ' + callBack);
+      return this._stack.push(callBack);
     };
 
     FileSystem.prototype.writeFile = function(filePath, file, onWrite) {
@@ -152,7 +151,6 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
       var callback, _i, _len, _ref;
       this._filesystem = fs;
       this._isCreated = true;
-      AE.Console.log('AE.FILESYSTEM created with name: ' + fs.name);
       _ref = this._stack;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         callback = _ref[_i];
@@ -182,7 +180,7 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
         default:
           msg = "Unknown Error";
       }
-      return AE.Console.error('AE.FILESYSTEM failed with ' + msg);
+      return AE.error('AE.FILESYSTEM failed with ' + msg);
     };
 
     return FileSystem;
@@ -339,7 +337,7 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
       if (this._fileURL) {
         return this.requestURL();
       } else {
-        return AE.Console.error('no file URL were specified');
+        return AE.error('no file URL were specified');
       }
     };
 
@@ -347,7 +345,6 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
       var _this = this;
       return asyncRequestURL(this._fileURL, function(blob) {
         return AE.FileSystem.getInstance().writeFile(_this.guid, blob, function() {
-          AE.Console.log('wrote :' + _this.guid);
           return _this._onSuccess(_this._filepath);
         });
       });
@@ -419,12 +416,14 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
     Config.prototype.setConfig = function(_opts) {
       this._opts = _opts;
       if (this._opts) {
+        AE.log('--------------------');
         if (this._opts['name']) {
-          AE.Console.log("Launching " + this._opts['name']);
+          AE.log("name: " + this._opts['name']);
         }
         if (this._opts['version']) {
-          return AE.Console.log(" version: " + this._opts['version']);
+          AE.log("version: " + this._opts['version']);
         }
+        return AE.log('--------------------');
       }
     };
 
@@ -489,9 +488,7 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
     */
 
 
-    GamePhase.prototype.onStatusChanged = function(sender, args) {
-      return AE.Console.log("status changed to :" + args.status);
-    };
+    GamePhase.prototype.onStatusChanged = function(sender, args) {};
 
     /*
         self explanatory
@@ -592,7 +589,7 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
 
     GamePhasesManager.prototype.addPhase = function(name, actionIn, actionOut, run) {
       if (this.has(name)) {
-        return AE.Console.error("Phase " + name + " already exists");
+        return AE.error("Phase " + name + " already exists");
       } else {
         return this._phases[name] = new AE.States.GamePhase(name, actionIn, actionOut, run);
       }
@@ -622,7 +619,7 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
         this._current["in"]();
         return this._current.run();
       } else {
-        return console.error("No such phase: " + current);
+        return AE.error("No such phase: " + current);
       }
     };
 
@@ -637,7 +634,7 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
 
     GamePhasesManager.prototype.transitionTo = function(next) {
       if (this._current === null) {
-        return AE.Console.error("No current phase was set, can't transit from nowhere");
+        return AE.error("No current phase was set, can't transit from nowhere");
       } else {
         this._current.out();
         this._current.setUnactive();
@@ -883,12 +880,11 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
 
     Manager.prototype.createWithMessagingSystem = function() {
       var core, mb, script, worker;
-      script = "    self.requestFileSystemSync = \      self.webkitRequestFileSystemSync || self.requestFileSystemSync;\n\    self.resolveLocalFileSystemURL = \      self.webkitResolveLocalFileSystemURL || self.resolveLocalFileSystemURL;\n\    self.onmessage = function(e) {\n\      var data = e.data;\n\      switch (data.cmd) {\n\        case 'start':\n\          self.postMessage('WORKER STARTED: ' + data.msg);\n\          break;\n\        case 'stop':\n\          self.postMessage('WORKER STOPPED: ' + data.msg +'.\            (buttons will no longer work)');\n\          self.close();\n\          break;\n\        case 'loadContext':\n\          eval(data.msg);\n\          console.log(AE);\n\        case 'loadFile':\n\          try{\n\            self.resolveLocalFileSystemURL(data.msg, function(fileEntry) {\n\              console.log(fileEntry.name);\n\            });\n\          } catch (e) {\n\            console.error(e);\n\          }\n\          break;\n\        case 'importScript':\n\          console.log(data.msg);\n\          importScripts(data.msg);\n\          self;          break;\n\        case 'onmessage':\n\          self.onmessage = data.msg;\n\          break;\n\        default:\n\          self.postMessage('Unknown command: ' + data.msg);\n\        };\n\    };\n\    ";
+      script = "    self.requestFileSystemSync = \      self.webkitRequestFileSystemSync || self.requestFileSystemSync;\n\    self.resolveLocalFileSystemURL = \      self.webkitResolveLocalFileSystemURL || self.resolveLocalFileSystemURL;\n\    self.onmessage = function(e) {\n\      var data = e.data;\n\      switch (data.cmd) {\n\        case 'start':\n\          self.postMessage('WORKER STARTED: ' + data.msg);\n\          break;\n\        case 'stop':\n\          self.postMessage('WORKER STOPPED: ' + data.msg +'.\            (buttons will no longer work)');\n\          self.close();\n\          break;\n\        case 'loadContext':\n\          eval(data.msg);\n\        case 'loadFile':\n\          try{\n\            self.resolveLocalFileSystemURL(data.msg, function(fileEntry) {\n\              console.log(fileEntry.name);\n\            });\n\          } catch (e) {\n\            console.error(e);\n\          }\n\          break;\n\        case 'importScript':\n\          console.log(data.msg);\n\          importScripts(data.msg);\n\          self;          break;\n\        case 'onmessage':\n\          self.onmessage = data.msg;\n\          break;\n\        default:\n\          self.postMessage('Unknown command: ' + data.msg);\n\        };\n\    };\n\    ";
       worker = this.createFromScript(script);
       worker.onmessage = this._onWorkerMessage;
       mb = new AE.MessageBox();
       core = AE.Loaders.Manager.getInstance().createURLLoader(AE_CORE_PATH, function(filepath) {
-        console.log(filepath);
         return AE.FileSystem.getInstance().readFile(filepath, function(file) {
           return worker.postMessage({
             'cmd': 'loadContext',
