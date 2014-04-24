@@ -1,15 +1,26 @@
-var AE = {'MVC':{},'States':{},'Workers':{}};
-
-
-/*
-  Simple Singleton implementation
-*/
-
+var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
 
 (function() {
-  var AEPhaseStatusEnum,
+  var AEPhaseStatusEnum, AE_CORE_PATH, asyncRequestURL, currentScript, scriptsArray, syncRequestUrl,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  AE.Console = {
+    log: function(message) {
+      return console.log(message);
+    },
+    debug: function(message) {
+      return console.debug(message);
+    },
+    error: function(message) {
+      return console.error(message);
+    }
+  };
+
+  /*
+    Simple Singleton implementation
+  */
+
 
   AE.Singleton = (function() {
 
@@ -30,60 +41,153 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
   })();
 
-  /*
-      A simple Observer pattern design implementation
-  */
-
-
-  AE.Event = (function() {
-
-    Event.prototype._subscribers = null;
-
-    Event.prototype._sender = null;
-
-    /*
-          constructor: called on instance creation
-          @param {Object} the event's sender
-    */
-
-
-    function Event(_sender) {
-      this._sender = _sender;
-      this._subscribers = [];
-    }
-
-    /*
-          subscribe: adds a new object to the distribution list
-          @param {Object} the listener object to be added
-    */
-
-
-    Event.prototype.subscribe = function(listener) {
-      return this._subscribers.push(listener);
-    };
-
-    /*
-        notify: distributes args to every subscriber
-        @param {Object} args : an object containing the messages' arguments
-    */
-
-
-    Event.prototype.notify = function(args) {
-      var i, _i, _ref, _results;
-      _results = [];
-      for (i = _i = 0, _ref = this._subscribers.length - 1; _i <= _ref; i = _i += 1) {
-        _results.push(this._subscribers[i](this._sender, args));
-      }
-      return _results;
-    };
-
-    return Event;
-
-  })();
-
   Function.prototype.property = function(prop, desc) {
     return Object.defineProperty(this.prototype, prop, desc);
   };
+
+  asyncRequestURL = function(URL, onSuccess) {
+    var request;
+    request = new XMLHttpRequest();
+    request.open('GET', URL, true);
+    request.responseType = 'blob';
+    request.addEventListener('loadend', function() {
+      if (request.status === 200) {
+        return onSuccess(request.response);
+      } else {
+        return console.error('could\'nt retrieve file: ' + URL);
+      }
+    });
+    request.send();
+    return request;
+  };
+
+  syncRequestUrl = function(URL, onSuccess) {
+    var request;
+    request = new XMLHttpRequest();
+    request.open('GET', URL, false);
+    request.responseType = 'blob';
+    request.send();
+    if (request.status === 200) {
+      return onSuccess(request.response);
+    } else {
+      return console.error('could\'nt retrieve file: ' + URL);
+    }
+  };
+
+  self.requestFileSystem = self.requestFileSystem || self.webkitRequestFileSystem;
+
+  AE.FileSystem = (function(_super) {
+
+    __extends(FileSystem, _super);
+
+    function FileSystem() {
+      return FileSystem.__super__.constructor.apply(this, arguments);
+    }
+
+    FileSystem.prototype._isCreated = null;
+
+    FileSystem.prototype._stack = [];
+
+    FileSystem.prototype.createFileSystem = function(callBack) {
+      if (this._isCreated === null) {
+        requestFileSystem(TEMPORARY, 10 * 1024 * 1024, (function(fs) {
+          AE.FileSystem.getInstance().onInitFS(fs);
+        }), function(e) {
+          AE.FileSystem.getInstance().onErrorFSHandler(e);
+        });
+        this._isCreated = false;
+      }
+      this._stack.push(callBack);
+      return console.log('stacking ' + callBack);
+    };
+
+    FileSystem.prototype.writeFile = function(filePath, file, onWrite) {
+      var _this = this;
+      if (this._filesystem) {
+        return this._filesystem.root.getFile(filePath, {
+          create: true
+        }, function(fileEntry) {
+          return fileEntry.createWriter(function(fileWriter) {
+            var blob;
+            fileWriter.onerror = function(e) {
+              return console.error(e);
+            };
+            if (onWrite) {
+              fileWriter.onwrite = onWrite;
+            }
+            blob = new Blob([file]);
+            return fileWriter.write(blob);
+          });
+        });
+      } else {
+        return this.createFileSystem(function() {
+          return _this.writeFile(filePath, file, onWrite);
+        });
+      }
+    };
+
+    FileSystem.prototype.readFile = function(filePath, onSuccess) {
+      var _this = this;
+      if (this._filesystem) {
+        return this._filesystem.root.getFile(filePath, {}, function(fileEntry) {
+          return fileEntry.file(function(file) {
+            var fileReader;
+            fileReader = new FileReader();
+            if (onSuccess) {
+              fileReader.onloadend = function() {
+                return onSuccess(fileReader.result);
+              };
+            }
+            return fileReader.readAsText(file);
+          });
+        });
+      } else {
+        return this.createFileSystem(function() {
+          return _this.readFile(filePath, onSuccess);
+        });
+      }
+    };
+
+    FileSystem.prototype.onInitFS = function(fs) {
+      var callback, _i, _len, _ref;
+      this._filesystem = fs;
+      this._isCreated = true;
+      AE.Console.log('AE.FILESYSTEM created with name: ' + fs.name);
+      _ref = this._stack;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        callback = _ref[_i];
+        callback.call();
+      }
+      return this._stack = [];
+    };
+
+    FileSystem.prototype.onErrorFSHandler = function(error) {
+      var msg;
+      switch (error.code) {
+        case FileError.QUOTA_EXCEEDED_ERR:
+          msg = "QUOTA_EXCEEDED_ERR";
+          break;
+        case FileError.NOT_FOUND_ERR:
+          msg = "NOT_FOUND_ERR";
+          break;
+        case FileError.SECURITY_ERR:
+          msg = "SECURITY_ERR";
+          break;
+        case FileError.INVALID_MODIFICATION_ERR:
+          msg = "INVALID_MODIFICATION_ERR";
+          break;
+        case FileError.INVALID_STATE_ERR:
+          msg = "INVALID_STATE_ERR";
+          break;
+        default:
+          msg = "Unknown Error";
+      }
+      return AE.Console.error('AE.FILESYSTEM failed with ' + msg);
+    };
+
+    return FileSystem;
+
+  })(AE.Singleton);
 
   /*
     AEIdFactory class aims to handle object identification through the engine via
@@ -169,8 +273,8 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
     Object.property('guid', {
       get: function() {
-        if (!this._guid) {
-          AE.IdFactory.getInstance().getGUID();
+        if (this._guid === null) {
+          this._guid = AE.IdFactory.getInstance().getGUID();
         }
         return this._guid;
       }
@@ -211,6 +315,99 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
   })();
 
+  AE.Loaders.URLLoader = (function(_super) {
+
+    __extends(URLLoader, _super);
+
+    URLLoader.prototype.isReady = false;
+
+    URLLoader.prototype._fileURL = null;
+
+    URLLoader.prototype._file = null;
+
+    function URLLoader(_fileURL, _onSuccess, _filepath) {
+      this._fileURL = _fileURL;
+      this._onSuccess = _onSuccess;
+      this._filepath = _filepath;
+      if (!this._filepath) {
+        this._filepath = this.guid;
+      }
+      this.guid;
+    }
+
+    URLLoader.prototype.load = function() {
+      if (this._fileURL) {
+        return this.requestURL();
+      } else {
+        return AE.Console.error('no file URL were specified');
+      }
+    };
+
+    URLLoader.prototype.requestURL = function() {
+      var _this = this;
+      return asyncRequestURL(this._fileURL, function(blob) {
+        return AE.FileSystem.getInstance().writeFile(_this.guid, blob, function() {
+          AE.Console.log('wrote :' + _this.guid);
+          return _this._onSuccess(_this._filepath);
+        });
+      });
+    };
+
+    return URLLoader;
+
+  })(AE.Object);
+
+  /*
+      A simple Observer pattern design implementation
+  */
+
+
+  AE.Event = (function() {
+
+    Event.prototype._subscribers = null;
+
+    Event.prototype._sender = null;
+
+    /*
+          constructor: called on instance creation
+          @param {Object} the event's sender
+    */
+
+
+    function Event(_sender) {
+      this._sender = _sender;
+      this._subscribers = [];
+    }
+
+    /*
+          subscribe: adds a new object to the distribution list
+          @param {Object} the listener object to be added
+    */
+
+
+    Event.prototype.subscribe = function(listener) {
+      return this._subscribers.push(listener);
+    };
+
+    /*
+        notify: distributes args to every subscriber
+        @param {Object} args : an object containing the messages' arguments
+    */
+
+
+    Event.prototype.notify = function(args) {
+      var i, _i, _ref, _results;
+      _results = [];
+      for (i = _i = 0, _ref = this._subscribers.length - 1; _i <= _ref; i = _i += 1) {
+        _results.push(this._subscribers[i](this._sender, args));
+      }
+      return _results;
+    };
+
+    return Event;
+
+  })();
+
   AEPhaseStatusEnum = Object.freeze({
     ACTIVE: 0,
     PAUSED: 1
@@ -235,8 +432,8 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
         Constructor:
     
         @param {String} _name : A human readable name
-        @param {Function} _in : the function to be triggered when when entering the state
-        @param {Function} _out : the function to be triggered when when leaving the state
+        @param {Function} _in : the function to be triggered when entering the state
+        @param {Function} _out : the function to be triggered when leaving the state
         @param {Function} _run : the function handling the state
     */
 
@@ -269,7 +466,7 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
 
     GamePhase.prototype.onStatusChanged = function(sender, args) {
-      return console.log("status changed to :" + args.status);
+      return AE.Console.log("status changed to :" + args.status);
     };
 
     /*
@@ -345,7 +542,8 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
     /*
         @param {String} phase : the name of the game phase to check for
-        @return {Boolean} (true|false) depending on whether the manager knows about it or not
+        @return {Boolean} (true|false) depending on whether the manager knows
+        about it or not
     */
 
 
@@ -370,7 +568,7 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
     GamePhasesManager.prototype.addPhase = function(name, actionIn, actionOut, run) {
       if (this.has(name)) {
-        return console.error("Phase " + name + " already exists");
+        return AE.Console.error("Phase " + name + " already exists");
       } else {
         return this._phases[name] = new AE.States.GamePhase(name, actionIn, actionOut, run);
       }
@@ -406,7 +604,8 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
     /*
         setCurrent:
-         gets to the specified state by appliying the transitions (if any were associated with the states)
+         gets to the specified state by appliying the transitions
+         (if any were associated with the states)
     
         @param {String} next : the state to be set as the current one
     */
@@ -414,7 +613,7 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
 
     GamePhasesManager.prototype.transitionTo = function(next) {
       if (this._current === null) {
-        return console.error("No current phase was set, can't transit from nowhere");
+        return AE.Console.error("No current phase was set, can't transit from nowhere");
       } else {
         this._current.out();
         this._current.setUnactive();
@@ -443,13 +642,55 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
       }
     });
 
-    function Engine() {
-      console.log("instantiating new engine");
+    Engine.property('MessageBox', {
+      get: function() {
+        if (!this._messageBox) {
+          this._messageBox = AE.Workers.Manager.getInstance().createWithMessagingSystem();
+        }
+        return this._messageBox;
+      }
+    });
+
+    function Engine(opts) {
+      AE.Console.log("instantiating new engine");
+      this.MessageBox = this.MessageBox;
     }
 
     return Engine;
 
   })(AE.Object);
+
+  if (self.document) {
+    scriptsArray = document.getElementsByTagName('script');
+    currentScript = scriptsArray[scriptsArray.length - 1];
+    AE_CORE_PATH = currentScript.src.replace(/\/script\.js$/, '/');
+  }
+
+  /*
+  	TODO: manage already loaded files
+  */
+
+
+  AE.Loaders.Manager = (function(_super) {
+
+    __extends(Manager, _super);
+
+    function Manager() {
+      return Manager.__super__.constructor.apply(this, arguments);
+    }
+
+    Manager.prototype._loaders = [];
+
+    Manager.prototype.createURLLoader = function(fileURL, onSuccess) {
+      var loader;
+      loader = new AE.Loaders.URLLoader(fileURL, onSuccess);
+      this._loaders.push(loader);
+      return loader;
+    };
+
+    return Manager;
+
+  })(AE.Singleton);
 
   AE.MVC.Controller = (function() {
 
@@ -523,5 +764,127 @@ var AE = {'MVC':{},'States':{},'Workers':{}};
     return View;
 
   })(AE.Object);
+
+  /*
+   MessageBox:
+      A message box accessible by every object
+  */
+
+
+  AE.MessageBox = (function() {
+
+    function MessageBox() {}
+
+    MessageBox.prototype._messages = null;
+
+    /*
+        @param {String} dest : the guid for the message recipient
+        @param {String} message : self explanatory
+    */
+
+
+    MessageBox.prototype.post = function(dest, message) {
+      return this._messages[dest].push(message);
+    };
+
+    /*
+        @param {String} dest : the guid for the message recipient
+        @return {Array.<String>} an array containing all the messages since the last
+        update
+    */
+
+
+    MessageBox.prototype.get = function(dest) {
+      return this._messages[dest];
+    };
+
+    /*
+        @param {string} dest : the guid for the message recipient
+    */
+
+
+    MessageBox.prototype.flush = function(dest) {
+      return this._messages[dest] = [];
+    };
+
+    MessageBox.prototype.onMessage = function(e) {
+      return self.postMessage('hello from MessageBox !');
+    };
+
+    return MessageBox;
+
+  })();
+
+  /*
+      Manager : a JS Workers managing class
+          each instance creates it's own Worker with the script passed as an
+          argument the AEWorker class is the interface for communicating with
+          the Worker
+          TODO: fromFile instantiation
+          TODO: worker interface
+  */
+
+
+  /*
+    new logic:
+      - instantiating worker
+      - send message "ask for context" from worker
+      - on context ready, mark worker as ready
+  */
+
+
+  AE.Workers.Manager = (function(_super) {
+
+    __extends(Manager, _super);
+
+    function Manager() {
+      return Manager.__super__.constructor.apply(this, arguments);
+    }
+
+    Manager.prototype._workers = [];
+
+    Manager.prototype._libBlob = null;
+
+    Manager.prototype.createFromScript = function(script) {
+      var blob, blobURL, worker;
+      blob = new Blob([script], {
+        type: 'application/javascript'
+      });
+      blobURL = URL.createObjectURL(blob);
+      worker = new Worker(blobURL);
+      this._workers.push(worker);
+      URL.revokeObjectURL(blobURL);
+      return worker;
+    };
+
+    Manager.prototype.createWithMessagingSystem = function() {
+      var core, mb, script, worker;
+      script = "    self.requestFileSystemSync = \      self.webkitRequestFileSystemSync || self.requestFileSystemSync;\n\    self.resolveLocalFileSystemURL = \      self.webkitResolveLocalFileSystemURL || self.resolveLocalFileSystemURL;\n\    self.onmessage = function(e) {\n\      var data = e.data;\n\      switch (data.cmd) {\n\        case 'start':\n\          self.postMessage('WORKER STARTED: ' + data.msg);\n\          break;\n\        case 'stop':\n\          self.postMessage('WORKER STOPPED: ' + data.msg +'.\            (buttons will no longer work)');\n\          self.close();\n\          break;\n\        case 'loadContext':\n\          eval(data.msg);\n\          console.log(AE);\n\        case 'loadFile':\n\          try{\n\            self.resolveLocalFileSystemURL(data.msg, function(fileEntry) {\n\              console.log(fileEntry.name);\n\            });\n\          } catch (e) {\n\            console.error(e);\n\          }\n\          break;\n\        case 'importScript':\n\          console.log(data.msg);\n\          importScripts(data.msg);\n\          self;          break;\n\        case 'onmessage':\n\          self.onmessage = data.msg;\n\          break;\n\        default:\n\          self.postMessage('Unknown command: ' + data.msg);\n\        };\n\    };\n\    ";
+      worker = this.createFromScript(script);
+      worker.onmessage = this._onWorkerMessage;
+      mb = new AE.MessageBox();
+      core = AE.Loaders.Manager.getInstance().createURLLoader(AE_CORE_PATH, function(filepath) {
+        console.log(filepath);
+        return AE.FileSystem.getInstance().readFile(filepath, function(file) {
+          return worker.postMessage({
+            'cmd': 'loadContext',
+            'msg': file
+          });
+        });
+      });
+      return core.load();
+    };
+
+    Manager.prototype._onWorkerMessage = function(event) {
+      return console.log(event.data);
+    };
+
+    Manager.prototype.sendMessageTo = function(index, msg) {
+      return this._workers[index].postMessage(msg);
+    };
+
+    return Manager;
+
+  })(AE.Singleton);
 
 }).call(this);
