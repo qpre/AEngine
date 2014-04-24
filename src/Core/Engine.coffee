@@ -2,6 +2,7 @@
 #<< AE/Object
 #<< AE/States/GamePhasesManager
 #<< AE/Helpers
+#<< AE/Config
 
 class AE.Engine extends AE.Object
   _phasesManager: null
@@ -24,6 +25,5 @@ class AE.Engine extends AE.Object
       @_messageBox
 
   constructor: (opts) ->
-
-    AE.Console.log "instantiating new engine"
+    AE.Config.getInstance().setConfig opts
     @MessageBox = @MessageBox
