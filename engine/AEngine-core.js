@@ -408,6 +408,30 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
 
   })();
 
+  AE.Config = (function(_super) {
+
+    __extends(Config, _super);
+
+    function Config() {
+      return Config.__super__.constructor.apply(this, arguments);
+    }
+
+    Config.prototype.setConfig = function(_opts) {
+      this._opts = _opts;
+      if (this._opts) {
+        if (this._opts['name']) {
+          AE.Console.log("Launching " + this._opts['name']);
+        }
+        if (this._opts['version']) {
+          return AE.Console.log(" version: " + this._opts['version']);
+        }
+      }
+    };
+
+    return Config;
+
+  })(AE.Singleton);
+
   AEPhaseStatusEnum = Object.freeze({
     ACTIVE: 0,
     PAUSED: 1
@@ -652,7 +676,7 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
     });
 
     function Engine(opts) {
-      AE.Console.log("instantiating new engine");
+      AE.Config.getInstance().setConfig(opts);
       this.MessageBox = this.MessageBox;
     }
 
