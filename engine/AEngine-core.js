@@ -1,4 +1,6 @@
 var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
+var Game = {};
+var Audio = {};
 
 (function() {
   var AEPhaseStatusEnum, AE_CORE_PATH, asyncRequestURL, currentScript, scriptsArray, syncRequestUrl,
@@ -147,6 +149,28 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
       } else {
         return this.createFileSystem(function() {
           return _this.readFile(filePath, onSuccess);
+        });
+      }
+    };
+
+    FileSystem.prototype.readBuffer = function(filePath, onSuccess) {
+      var _this = this;
+      if (this._filesystem) {
+        return this._filesystem.root.getFile(filePath, {}, function(fileEntry) {
+          return fileEntry.file(function(file) {
+            var fileReader;
+            fileReader = new FileReader();
+            if (onSuccess) {
+              fileReader.onloadend = function() {
+                return onSuccess(fileReader.result);
+              };
+            }
+            return fileReader.readAsArrayBuffer(file);
+          });
+        });
+      } else {
+        return this.createFileSystem(function() {
+          return _this.readBuffer(filePath, onSuccess);
         });
       }
     };
@@ -654,31 +678,8 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
 
     __extends(Engine, _super);
 
-    Engine.prototype._phasesManager = null;
-
-    Engine.prototype._messageBox = null;
-
-    Engine.property('PhasesManager', {
-      get: function() {
-        if (!this._phasesManager) {
-          this._phasesManager = new AE.States.GamePhasesManager();
-        }
-        return this._phasesManager;
-      }
-    });
-
-    Engine.property('MessageBox', {
-      get: function() {
-        if (!this._messageBox) {
-          this._messageBox = AE.Workers.Manager.getInstance().createWithMessagingSystem();
-        }
-        return this._messageBox;
-      }
-    });
-
     function Engine(opts) {
-      AE.Config.getInstance().setConfig(opts);
-      this.MessageBox = this.MessageBox;
+      console.log("imma new engine boy!");
     }
 
     return Engine;
@@ -910,5 +911,96 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
     return Manager;
 
   })(AE.Singleton);
+
+  AE.Game = Game;
+
+  Game.Engine = (function(_super) {
+
+    __extends(Engine, _super);
+
+    Engine.prototype._phasesManager = null;
+
+    Engine.prototype._messageBox = null;
+
+    Engine.property('PhasesManager', {
+      get: function() {
+        if (!this._phasesManager) {
+          this._phasesManager = new AE.States.GamePhasesManager();
+        }
+        return this._phasesManager;
+      }
+    });
+
+    Engine.property('MessageBox', {
+      get: function() {
+        if (!this._messageBox) {
+          this._messageBox = AE.Workers.Manager.getInstance().createWithMessagingSystem();
+        }
+        return this._messageBox;
+      }
+    });
+
+    function Engine(opts) {
+      AE.Config.getInstance().setConfig(opts);
+      this.MessageBox = this.MessageBox;
+    }
+
+    return Engine;
+
+  })(AE.Engine);
+
+  AE.Audio = Audio;
+
+  Audio.Engine = (function(_super) {
+
+    __extends(Engine, _super);
+
+    Engine.prototype.music = {};
+
+    Engine.prototype.effects = {};
+
+    Engine.prototype.context = null;
+
+    function Engine() {
+      try {
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.context = new AudioContext();
+        AE.log('AE.Audio: start');
+      } catch (e) {
+        AE.error('AE.Audio : Web Audio API not supported');
+      }
+    }
+
+    Engine.prototype.loadMusic = function(sourceFile, name) {};
+
+    Engine.prototype.loadEffect = function(sourceFile, name) {
+      var loader,
+        _this = this;
+      loader = AE.Loaders.Manager.getInstance().createURLLoader(sourceFile, function(file) {
+        return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
+          return _this.context.decodeAudioData(buffer, function(b) {
+            AE.log("AE.Audio: effect " + name + " loaded");
+            return _this.effects[name] = b;
+          });
+        });
+      });
+      return loader.load();
+    };
+
+    Engine.prototype.playEffect = function(name) {
+      var source;
+      if (this.effects[name]) {
+        source = this.context.createBufferSource();
+        source.buffer = this.effects[name];
+        source.connect(this.context.destination);
+        return source.start(0);
+      } else {
+        return AE.error("AE.Audio: no such effect: " + name);
+      }
+    };
+
+    return Engine;
+
+  })(AE.Engine);
 
 }).call(this);
