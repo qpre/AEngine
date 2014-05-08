@@ -75,7 +75,8 @@ class AE.Workers.Manager extends AE.Singleton
     worker = @createFromScript(script)
     worker.onmessage = @_onWorkerMessage
     mb = new AE.MessageBox()
-    core = AE.Loaders.Manager.getInstance().createURLLoader AE_CORE_PATH, (filepath) ->
+    core = AE.Loaders.Manager.getInstance().createURLLoader AE_CORE_PATH,\
+    (filepath) ->
       AE.FileSystem.getInstance().readFile filepath, (file) ->
         worker.postMessage {
           'cmd': 'loadContext',

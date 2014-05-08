@@ -8,7 +8,7 @@ self.requestFileSystemAsync = \
   self.requestFileSystem || self.webkitRequestFileSystem
 
 self.resolveLocalFileSystemURL = \
-  self.webkitResolveLocalFileSystemURL || self.resolveLocalFileSystemURL;
+  self.webkitResolveLocalFileSystemURL || self.resolveLocalFileSystemURL
 
 class AE.FileSystem extends AE.Singleton
   _isCreated: null
@@ -52,6 +52,20 @@ class AE.FileSystem extends AE.Singleton
     else
       @createFileSystem () =>
         @readFile filePath, onSuccess
+        
+  readBuffer: (filePath, onSuccess) ->
+    if @_filesystem
+      @_filesystem.root.getFile filePath, {}, (fileEntry) ->
+        fileEntry.file (file) ->
+          fileReader = new FileReader()
+          if (onSuccess)
+            fileReader.onloadend = () ->
+              onSuccess fileReader.result
+          # TODO: detect the kind of read to perform based on the fileName
+          fileReader.readAsArrayBuffer(file)
+    else
+      @createFileSystem () =>
+        @readBuffer filePath, onSuccess
 
   onInitFS: (fs) ->
     @_filesystem = fs

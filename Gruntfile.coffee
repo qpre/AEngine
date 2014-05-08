@@ -1,6 +1,11 @@
 module.exports = (grunt) ->
   # Project configuration.
   BANNER =  "/* The A-Engine Core: " + (Date.now()).toString() + " */"
+  GROUPS = {
+    "src/Core":"AE",
+    "src/Game": "Game",
+    "src/Audio":"Audio"
+  }
 
   grunt.initConfig
     pkg: grunt.file.readJSON("package.json")
@@ -10,13 +15,13 @@ module.exports = (grunt) ->
         minify: false
         packaging: true
         # bare: true
-        folders: { "src/Core":"AE" }
+        folders: GROUPS
         release: "build/AEngine-core.js"
       minified:
         minify: true
         packaging: true
         # bare: true
-        folders: { "src/Core":"AE" }
+        folders: GROUPS
         release: "build/AEngine-core.min.js"
 
     coffee:
