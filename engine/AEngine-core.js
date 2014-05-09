@@ -7,6 +7,63 @@ var Audio = {};
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  Audio.SubSystem = (function(_super) {
+
+    __extends(SubSystem, _super);
+
+    SubSystem.prototype.buffers = {};
+
+    function SubSystem(filesMap) {
+      try {
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.context = new AudioContext();
+        AE.log('AE.Audio: start');
+      } catch (e) {
+        AE.error('AE.Audio : Web Audio API not supported');
+      }
+      this.loadMap(filesMap);
+    }
+
+    SubSystem.prototype.load = function(filePath, name) {
+      var loader,
+        _this = this;
+      loader = AE.Loaders.Manager.getInstance().createURLLoader(filePath, function(file) {
+        return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
+          return _this.context.decodeAudioData(buffer, function(b) {
+            AE.log("AE.Audio: effect " + name + " loaded");
+            return _this.buffers[name] = b;
+          });
+        });
+      });
+      return loader.load();
+    };
+
+    SubSystem.prototype.loadMap = function(filesMap) {
+      var file, name, _results;
+      _results = [];
+      for (name in filesMap) {
+        file = filesMap[name];
+        _results.push(this.load(file(name)));
+      }
+      return _results;
+    };
+
+    SubSystem.prototype.play = function(name) {
+      var source;
+      if (this.buffers[bufferName]) {
+        source = this.buffers.createBufferSource();
+        source.buffer = this.buffers[bufferName];
+        source.connect(this.buffers.destination);
+        return source.start(0);
+      } else {
+        return onError();
+      }
+    };
+
+    return SubSystem;
+
+  })(AE.Object);
+
   AE.log = function(message) {
     return console.log(message);
   };
@@ -955,48 +1012,14 @@ var Audio = {};
 
     __extends(Engine, _super);
 
-    Engine.prototype.music = {};
-
-    Engine.prototype.effects = {};
-
     Engine.prototype.context = null;
 
     function Engine() {
-      try {
-        window.AudioContext = window.AudioContext || window.webkitAudioContext;
-        this.context = new AudioContext();
-        AE.log('AE.Audio: start');
-      } catch (e) {
-        AE.error('AE.Audio : Web Audio API not supported');
-      }
+      AE.log('AE.Audio: start');
     }
 
-    Engine.prototype.loadMusic = function(sourceFile, name) {};
-
-    Engine.prototype.loadEffect = function(sourceFile, name) {
-      var loader,
-        _this = this;
-      loader = AE.Loaders.Manager.getInstance().createURLLoader(sourceFile, function(file) {
-        return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
-          return _this.context.decodeAudioData(buffer, function(b) {
-            AE.log("AE.Audio: effect " + name + " loaded");
-            return _this.effects[name] = b;
-          });
-        });
-      });
-      return loader.load();
-    };
-
-    Engine.prototype.playEffect = function(name) {
-      var source;
-      if (this.effects[name]) {
-        source = this.context.createBufferSource();
-        source.buffer = this.effects[name];
-        source.connect(this.context.destination);
-        return source.start(0);
-      } else {
-        return AE.error("AE.Audio: no such effect: " + name);
-      }
+    Engine.prototype.createSubSystem = function(name, filesMap) {
+      return this.systems[name] = new AE.Audio.System(filesMap);
     };
 
     return Engine;
