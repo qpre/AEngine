@@ -1,4 +1,4 @@
-var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
+var AE = {'MVC':{},'States':{},'Workers':{}};
 var Game = {};
 var Audio = {};
 
@@ -191,217 +191,25 @@ var Audio = {};
 
   })();
 
-  AE.log = function(message) {
-    return console.log(message);
-  };
-
-  AE.debug = function(message) {
-    return console.debug(message);
-  };
-
-  AE.error = function(message) {
-    return console.error(message);
-  };
-
   Audio.SubSystem = (function(_super) {
 
     __extends(SubSystem, _super);
 
-    SubSystem.prototype.effects = {};
+    SubSystem.prototype.sounds = {};
 
     SubSystem.prototype.context = null;
 
-    function SubSystem(filesMap) {
+    function SubSystem(names) {
       try {
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         this.context = new AudioContext();
       } catch (e) {
         AE.error('AE.Audio : Web Audio API not supported');
       }
-      this.loadMap(filesMap);
+      this.loadMap(names);
     }
 
     return SubSystem;
-
-  })(AE.Object);
-
-  self.requestFileSystem = self.requestFileSystem || self.webkitRequestFileSystem;
-
-  self.requestFileSystemAsync = self.requestFileSystem || self.webkitRequestFileSystem;
-
-  self.resolveLocalFileSystemURL = self.webkitResolveLocalFileSystemURL || self.resolveLocalFileSystemURL;
-
-  AE.FileSystem = (function(_super) {
-
-    __extends(FileSystem, _super);
-
-    function FileSystem() {
-      return FileSystem.__super__.constructor.apply(this, arguments);
-    }
-
-    FileSystem.prototype._isCreated = null;
-
-    FileSystem.prototype._stack = [];
-
-    FileSystem.prototype.createFileSystem = function(callBack) {
-      if (this._isCreated === null) {
-        requestFileSystem(TEMPORARY, 10 * 1024 * 1024, (function(fs) {
-          AE.FileSystem.getInstance().onInitFS(fs);
-        }), function(e) {
-          AE.FileSystem.getInstance().onErrorFSHandler(e);
-        });
-        this._isCreated = false;
-      }
-      return this._stack.push(callBack);
-    };
-
-    FileSystem.prototype.writeFile = function(filePath, file, onWrite) {
-      var _this = this;
-      if (this._filesystem) {
-        return this._filesystem.root.getFile(filePath, {
-          create: true
-        }, function(fileEntry) {
-          return fileEntry.createWriter(function(fileWriter) {
-            var blob;
-            fileWriter.onerror = function(e) {
-              return console.error(e);
-            };
-            if (onWrite) {
-              fileWriter.onwrite = onWrite;
-            }
-            blob = new Blob([file]);
-            return fileWriter.write(blob);
-          });
-        });
-      } else {
-        return this.createFileSystem(function() {
-          return _this.writeFile(filePath, file, onWrite);
-        });
-      }
-    };
-
-    FileSystem.prototype.readFile = function(filePath, onSuccess) {
-      var _this = this;
-      if (this._filesystem) {
-        return this._filesystem.root.getFile(filePath, {}, function(fileEntry) {
-          return fileEntry.file(function(file) {
-            var fileReader;
-            fileReader = new FileReader();
-            if (onSuccess) {
-              fileReader.onloadend = function() {
-                return onSuccess(fileReader.result);
-              };
-            }
-            return fileReader.readAsText(file);
-          });
-        });
-      } else {
-        return this.createFileSystem(function() {
-          return _this.readFile(filePath, onSuccess);
-        });
-      }
-    };
-
-    FileSystem.prototype.readBuffer = function(filePath, onSuccess) {
-      var _this = this;
-      if (this._filesystem) {
-        return this._filesystem.root.getFile(filePath, {}, function(fileEntry) {
-          return fileEntry.file(function(file) {
-            var fileReader;
-            fileReader = new FileReader();
-            if (onSuccess) {
-              fileReader.onloadend = function() {
-                return onSuccess(fileReader.result);
-              };
-            }
-            return fileReader.readAsArrayBuffer(file);
-          });
-        });
-      } else {
-        return this.createFileSystem(function() {
-          return _this.readBuffer(filePath, onSuccess);
-        });
-      }
-    };
-
-    FileSystem.prototype.onInitFS = function(fs) {
-      var callback, _i, _len, _ref;
-      this._filesystem = fs;
-      this._isCreated = true;
-      _ref = this._stack;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        callback = _ref[_i];
-        callback.call();
-      }
-      return this._stack = [];
-    };
-
-    FileSystem.prototype.onErrorFSHandler = function(error) {
-      var msg;
-      switch (error.code) {
-        case FileError.QUOTA_EXCEEDED_ERR:
-          msg = "QUOTA_EXCEEDED_ERR";
-          break;
-        case FileError.NOT_FOUND_ERR:
-          msg = "NOT_FOUND_ERR";
-          break;
-        case FileError.SECURITY_ERR:
-          msg = "SECURITY_ERR";
-          break;
-        case FileError.INVALID_MODIFICATION_ERR:
-          msg = "INVALID_MODIFICATION_ERR";
-          break;
-        case FileError.INVALID_STATE_ERR:
-          msg = "INVALID_STATE_ERR";
-          break;
-        default:
-          msg = "Unknown Error";
-      }
-      return AE.error('AE.FILESYSTEM failed with ' + msg);
-    };
-
-    return FileSystem;
-
-  })(AE.Singleton);
-
-  AE.Loaders.URLLoader = (function(_super) {
-
-    __extends(URLLoader, _super);
-
-    URLLoader.prototype.isReady = false;
-
-    URLLoader.prototype._fileURL = null;
-
-    URLLoader.prototype._file = null;
-
-    function URLLoader(_fileURL, _onSuccess, _filepath) {
-      this._fileURL = _fileURL;
-      this._onSuccess = _onSuccess;
-      this._filepath = _filepath;
-      if (!this._filepath) {
-        this._filepath = this.guid;
-      }
-      this.guid;
-    }
-
-    URLLoader.prototype.load = function() {
-      if (this._fileURL) {
-        return this.requestURL();
-      } else {
-        return AE.error('no file URL were specified');
-      }
-    };
-
-    URLLoader.prototype.requestURL = function() {
-      var _this = this;
-      return asyncRequestURL(this._fileURL, function(blob) {
-        return AE.FileSystem.getInstance().writeFile(_this.guid, blob, function() {
-          return _this._onSuccess(_this._filepath);
-        });
-      });
-    };
-
-    return URLLoader;
 
   })(AE.Object);
 
@@ -481,6 +289,18 @@ var Audio = {};
     return Config;
 
   })(AE.Singleton);
+
+  AE.log = function(message) {
+    return console.log(message);
+  };
+
+  AE.debug = function(message) {
+    return console.debug(message);
+  };
+
+  AE.error = function(message) {
+    return console.error(message);
+  };
 
   AEPhaseStatusEnum = Object.freeze({
     ACTIVE: 0,
@@ -715,29 +535,142 @@ var Audio = {};
     AE_CORE_PATH = currentScript.src.replace(/\/script\.js$/, '/');
   }
 
-  /*
-  	TODO: manage already loaded files
-  */
+  self.requestFileSystem = self.requestFileSystem || self.webkitRequestFileSystem;
 
+  self.requestFileSystemAsync = self.requestFileSystem || self.webkitRequestFileSystem;
 
-  AE.Loaders.Manager = (function(_super) {
+  self.resolveLocalFileSystemURL = self.webkitResolveLocalFileSystemURL || self.resolveLocalFileSystemURL;
 
-    __extends(Manager, _super);
+  AE.FileSystem = (function(_super) {
 
-    function Manager() {
-      return Manager.__super__.constructor.apply(this, arguments);
+    __extends(FileSystem, _super);
+
+    function FileSystem() {
+      return FileSystem.__super__.constructor.apply(this, arguments);
     }
 
-    Manager.prototype._loaders = [];
+    FileSystem.prototype._isCreated = null;
 
-    Manager.prototype.createURLLoader = function(fileURL, onSuccess) {
-      var loader;
-      loader = new AE.Loaders.URLLoader(fileURL, onSuccess);
-      this._loaders.push(loader);
-      return loader;
+    FileSystem.prototype._stack = [];
+
+    FileSystem.prototype.createFileSystem = function(callBack) {
+      if (this._isCreated === null) {
+        requestFileSystem(TEMPORARY, 10 * 1024 * 1024, (function(fs) {
+          AE.FileSystem.getInstance().onInitFS(fs);
+        }), function(e) {
+          AE.FileSystem.getInstance().onErrorFSHandler(e);
+        });
+        this._isCreated = false;
+      }
+      return this._stack.push(callBack);
     };
 
-    return Manager;
+    FileSystem.prototype.writeFile = function(filePath, file, onWrite) {
+      var _this = this;
+      if (this._filesystem) {
+        return this._filesystem.root.getFile(filePath, {
+          create: true
+        }, function(fileEntry) {
+          return fileEntry.createWriter(function(fileWriter) {
+            var blob;
+            fileWriter.onerror = function(e) {
+              return console.error(e);
+            };
+            if (onWrite) {
+              fileWriter.onwrite = onWrite;
+            }
+            blob = new Blob([file]);
+            return fileWriter.write(blob);
+          });
+        });
+      } else {
+        return this.createFileSystem(function() {
+          return _this.writeFile(filePath, file, onWrite);
+        });
+      }
+    };
+
+    FileSystem.prototype.readFile = function(filePath, onSuccess) {
+      var _this = this;
+      if (this._filesystem) {
+        return this._filesystem.root.getFile(filePath, {}, function(fileEntry) {
+          return fileEntry.file(function(file) {
+            var fileReader;
+            fileReader = new FileReader();
+            if (onSuccess) {
+              fileReader.onloadend = function() {
+                return onSuccess(fileReader.result);
+              };
+            }
+            return fileReader.readAsText(file);
+          });
+        });
+      } else {
+        return this.createFileSystem(function() {
+          return _this.readFile(filePath, onSuccess);
+        });
+      }
+    };
+
+    FileSystem.prototype.readBuffer = function(filePath, onSuccess) {
+      var _this = this;
+      if (this._filesystem) {
+        return this._filesystem.root.getFile(filePath, {}, function(fileEntry) {
+          return fileEntry.file(function(file) {
+            var fileReader;
+            fileReader = new FileReader();
+            if (onSuccess) {
+              fileReader.onloadend = function() {
+                return onSuccess(fileReader.result);
+              };
+            }
+            return fileReader.readAsArrayBuffer(file);
+          });
+        });
+      } else {
+        return this.createFileSystem(function() {
+          return _this.readBuffer(filePath, onSuccess);
+        });
+      }
+    };
+
+    FileSystem.prototype.onInitFS = function(fs) {
+      var callback, _i, _len, _ref;
+      this._filesystem = fs;
+      this._isCreated = true;
+      _ref = this._stack;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        callback = _ref[_i];
+        callback.call();
+      }
+      return this._stack = [];
+    };
+
+    FileSystem.prototype.onErrorFSHandler = function(error) {
+      var msg;
+      switch (error.code) {
+        case FileError.QUOTA_EXCEEDED_ERR:
+          msg = "QUOTA_EXCEEDED_ERR";
+          break;
+        case FileError.NOT_FOUND_ERR:
+          msg = "NOT_FOUND_ERR";
+          break;
+        case FileError.SECURITY_ERR:
+          msg = "SECURITY_ERR";
+          break;
+        case FileError.INVALID_MODIFICATION_ERR:
+          msg = "INVALID_MODIFICATION_ERR";
+          break;
+        case FileError.INVALID_STATE_ERR:
+          msg = "INVALID_STATE_ERR";
+          break;
+        default:
+          msg = "Unknown Error";
+      }
+      return AE.error('AE.FILESYSTEM failed with ' + msg);
+    };
+
+    return FileSystem;
 
   })(AE.Singleton);
 
@@ -912,7 +845,7 @@ var Audio = {};
       worker = this.createFromScript(script);
       worker.onmessage = this._onWorkerMessage;
       mb = new AE.MessageBox();
-      core = AE.Loaders.Manager.getInstance().createURLLoader(AE_CORE_PATH, function(filepath) {
+      core = AE.Assets.Manager.getInstance().createURLLoader(AE_CORE_PATH, function(filepath) {
         return AE.FileSystem.getInstance().readFile(filepath, function(file) {
           return worker.postMessage({
             'cmd': 'loadContext',
@@ -988,8 +921,8 @@ var Audio = {};
       AE.log('AE.Audio: start');
     }
 
-    Engine.prototype.createEffectsSubSystem = function(name, filesMap) {
-      this.effectsSystems[name] = new AE.Audio.EffectsSubSystem(filesMap);
+    Engine.prototype.createEffectsSubSystem = function(name, effectsMap) {
+      this.effectsSystems[name] = new AE.Audio.EffectsSubSystem(effectsMap);
       return this.effectsSystems[name];
     };
 
@@ -1001,31 +934,30 @@ var Audio = {};
 
     __extends(Effect, _super);
 
+    Effect.prototype.name = null;
+
     Effect.prototype.context = null;
 
     Effect.prototype.buffer = null;
 
     Effect.prototype.context = null;
 
-    Effect.prototype.filePath = null;
-
-    Effect.prototype.playing = false;
-
     Effect.prototype.loaded = false;
 
-    function Effect(filePath, context) {
-      var loader,
+    function Effect(name, context, callback) {
+      var file,
         _this = this;
-      this.filePath = filePath;
+      this.name = name;
       this.context = context;
-      loader = AE.Loaders.Manager.getInstance().createURLLoader(filePath, function(file) {
-        return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
-          return _this.context.decodeAudioData(buffer, function(b) {
-            _this.buffer = b;
-            return AE.log("AE.Audio: effect " + name + " loaded");
-          });
+      file = AE.Assets.Manager.getInstance().get(name, AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
+        return _this.context.decodeAudioData(buffer, function(b) {
+          _this.buffer = b;
+          _this.loaded = true;
+          if (callback) {
+            return callback();
+          }
         });
-      });
+      }));
       loader.load();
     }
 
@@ -1049,19 +981,19 @@ var Audio = {};
       return EffectsSubSystem.__super__.constructor.apply(this, arguments);
     }
 
-    EffectsSubSystem.prototype.loadMap = function(filesMap) {
-      var file, name, _results;
+    EffectsSubSystem.prototype.loadMap = function(names) {
+      var name, _i, _len, _results;
       _results = [];
-      for (name in filesMap) {
-        file = filesMap[name];
-        _results.push(this.effects[name] = new Audio.Effect(file, this.context));
+      for (_i = 0, _len = names.length; _i < _len; _i++) {
+        name = names[_i];
+        _results.push(this.sounds[name] = new AE.Audio.Effect(name, this.context));
       }
       return _results;
     };
 
     EffectsSubSystem.prototype.fire = function(name) {
-      if (this.effects[name]) {
-        return this.effects[name].fire();
+      if (this.sounds[name]) {
+        return this.sounds[name].fire();
       } else {
         return onError();
       }
