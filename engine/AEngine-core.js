@@ -997,4 +997,78 @@ var Audio = {};
 
   })(AE.Engine);
 
+  Audio.Effect = (function(_super) {
+
+    __extends(Effect, _super);
+
+    Effect.prototype.context = null;
+
+    Effect.prototype.buffer = null;
+
+    Effect.prototype.context = null;
+
+    Effect.prototype.filePath = null;
+
+    Effect.prototype.playing = false;
+
+    Effect.prototype.loaded = false;
+
+    function Effect(filePath, context) {
+      var loader,
+        _this = this;
+      this.filePath = filePath;
+      this.context = context;
+      loader = AE.Loaders.Manager.getInstance().createURLLoader(filePath, function(file) {
+        return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
+          return _this.context.decodeAudioData(buffer, function(b) {
+            _this.buffer = b;
+            return AE.log("AE.Audio: effect " + name + " loaded");
+          });
+        });
+      });
+      loader.load();
+    }
+
+    Effect.prototype.fire = function() {
+      var source;
+      source = this.context.createBufferSource();
+      source.buffer = this.buffer;
+      source.connect(this.context.destination);
+      return source.start(0);
+    };
+
+    return Effect;
+
+  })(AE.Object);
+
+  Audio.EffectsSubSystem = (function(_super) {
+
+    __extends(EffectsSubSystem, _super);
+
+    function EffectsSubSystem() {
+      return EffectsSubSystem.__super__.constructor.apply(this, arguments);
+    }
+
+    EffectsSubSystem.prototype.loadMap = function(filesMap) {
+      var file, name, _results;
+      _results = [];
+      for (name in filesMap) {
+        file = filesMap[name];
+        _results.push(this.effects[name] = new Audio.Effect(file, this.context));
+      }
+      return _results;
+    };
+
+    EffectsSubSystem.prototype.fire = function(name) {
+      if (this.effects[name]) {
+        return this.effects[name].fire();
+      } else {
+        return onError();
+      }
+    };
+
+    return EffectsSubSystem;
+
+  })(Audio.SubSystem);
+
 }).call(this);
