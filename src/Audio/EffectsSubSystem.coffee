@@ -2,13 +2,12 @@
 #<< Audio/Effect
 
 class Audio.EffectsSubSystem extends Audio.SubSystem
+  loadMap: (names) ->
+    for name in names
+      @sounds[name] = new AE.Audio.Effect name, @context
   
-  loadMap: (filesMap) ->
-    for name, file of filesMap
-      @effects[name] = new Audio.Effect file, @context
-    
   fire: (name) ->
-    if @effects[name]
-      @effects[name].fire()
+    if @sounds[name]
+      @sounds[name].fire()
     else
       onError()

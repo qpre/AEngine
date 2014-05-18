@@ -11,6 +11,6 @@ class Audio.Engine extends AE.Engine
   constructor: () ->
     AE.log 'AE.Audio: start'
   
-  createEffectsSubSystem: (name, filesMap) ->
-    @effectsSystems[name] = new AE.Audio.EffectsSubSystem(filesMap)
+  createEffectsSubSystem: (name, effectsMap) ->
+    @effectsSystems[name] = new AE.Audio.EffectsSubSystem(effectsMap)
     @effectsSystems[name]

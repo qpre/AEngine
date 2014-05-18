@@ -8,22 +8,24 @@
 #
 
 class Audio.Effect extends AE.Object
+  name: null
+  
   context:  null
   buffer:   null
   context:  null
   
-  filePath: null
-  
-  playing:  false
   loaded:   false
   
-  constructor: (@filePath, @context) ->
-    loader = AE.Loaders.Manager.getInstance().createURLLoader filePath,\
-    (file) =>
-      AE.FileSystem.getInstance().readBuffer file, (buffer) =>
-        @context.decodeAudioData buffer, (b) =>
-          @buffer = b
-          AE.log "AE.Audio: effect #{name} loaded"
+  constructor: (@name, @context, callback) ->
+    
+    # You must use an assetmgr before.
+    
+    file = AE.Assets.Manager.getInstance().get name,\
+    AE.FileSystem.getInstance().readBuffer file, (buffer) =>
+      @context.decodeAudioData buffer, (b) =>
+        @buffer = b
+        @loaded = true
+        if (callback) then callback()
 
     loader.load()
   

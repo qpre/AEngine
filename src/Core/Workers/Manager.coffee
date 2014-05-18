@@ -9,7 +9,6 @@
         TODO: worker interface
 ###
 
-
 ###
   new logic:
     - instantiating worker
@@ -75,7 +74,7 @@ class AE.Workers.Manager extends AE.Singleton
     worker = @createFromScript(script)
     worker.onmessage = @_onWorkerMessage
     mb = new AE.MessageBox()
-    core = AE.Loaders.Manager.getInstance().createURLLoader AE_CORE_PATH,\
+    core = AE.Assets.Manager.getInstance().createURLLoader AE_CORE_PATH,\
     (filepath) ->
       AE.FileSystem.getInstance().readFile filepath, (file) ->
         worker.postMessage {

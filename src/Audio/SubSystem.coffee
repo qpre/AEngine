@@ -1,14 +1,14 @@
 #<< AE/Object
 
 class Audio.SubSystem extends AE.Object
-  effects: {}
+  sounds: {}
   context: null
   
-  constructor: (filesMap)->
+  constructor: (names) ->
     try
       window.AudioContext = window.AudioContext||window.webkitAudioContext
       @context = new AudioContext()
     catch e
       AE.error 'AE.Audio : Web Audio API not supported'
       
-    @loadMap filesMap
+    @loadMap names
