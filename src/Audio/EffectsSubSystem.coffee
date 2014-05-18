@@ -11,3 +11,7 @@ class Audio.EffectsSubSystem extends Audio.SubSystem
       @sounds[name].fire()
     else
       onError()
+      
+  prepare: () ->
+    for name, sound of @sounds
+      sound.prepare()
