@@ -207,54 +207,19 @@ var Audio = {};
 
     __extends(SubSystem, _super);
 
-    SubSystem.prototype.buffers = {};
+    SubSystem.prototype.effects = {};
+
+    SubSystem.prototype.context = null;
 
     function SubSystem(filesMap) {
       try {
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         this.context = new AudioContext();
-        AE.log('AE.Audio: start');
       } catch (e) {
         AE.error('AE.Audio : Web Audio API not supported');
       }
       this.loadMap(filesMap);
     }
-
-    SubSystem.prototype.load = function(filePath, name) {
-      var loader,
-        _this = this;
-      loader = AE.Loaders.Manager.getInstance().createURLLoader(filePath, function(file) {
-        return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
-          return _this.context.decodeAudioData(buffer, function(b) {
-            AE.log("AE.Audio: effect " + name + " loaded");
-            return _this.buffers[name] = b;
-          });
-        });
-      });
-      return loader.load();
-    };
-
-    SubSystem.prototype.loadMap = function(filesMap) {
-      var file, name, _results;
-      _results = [];
-      for (name in filesMap) {
-        file = filesMap[name];
-        _results.push(this.load(file, name));
-      }
-      return _results;
-    };
-
-    SubSystem.prototype.play = function(name) {
-      var source;
-      if (this.buffers[name]) {
-        source = this.context.createBufferSource();
-        source.buffer = this.buffers[name];
-        source.connect(this.context.destination);
-        return source.start(0);
-      } else {
-        return onError();
-      }
-    };
 
     return SubSystem;
 
@@ -1015,15 +980,17 @@ var Audio = {};
 
     Engine.prototype.context = null;
 
-    Engine.prototype.systems = {};
+    Engine.prototype.effectsSystems = {};
+
+    Engine.prototype.musicSystems = {};
 
     function Engine() {
       AE.log('AE.Audio: start');
     }
 
-    Engine.prototype.createSubSystem = function(name, filesMap) {
-      this.systems[name] = new AE.Audio.SubSystem(filesMap);
-      return this.systems[name];
+    Engine.prototype.createEffectsSubSystem = function(name, filesMap) {
+      this.effectsSystems[name] = new AE.Audio.EffectsSubSystem(filesMap);
+      return this.effectsSystems[name];
     };
 
     return Engine;
