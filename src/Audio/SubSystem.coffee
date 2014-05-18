@@ -1,4 +1,4 @@
-
+#<< AE/Object
 class Audio.SubSystem extends AE.Object
   buffers: {}
   
@@ -24,13 +24,13 @@ class Audio.SubSystem extends AE.Object
     
   loadMap: (filesMap) ->
     for name, file of filesMap
-      @load file name
+      @load file, name
     
   play: (name) ->
-    if @buffers[bufferName]
-      source = @buffers.createBufferSource()
-      source.buffer = @buffers[bufferName]
-      source.connect @buffers.destination
+    if @buffers[name]
+      source = @context.createBufferSource()
+      source.buffer = @buffers[name]
+      source.connect @context.destination
       source.start(0)
     else
       onError()
