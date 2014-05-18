@@ -2,84 +2,16 @@ var AE = {'Loaders':{},'MVC':{},'States':{},'Workers':{}};
 var Game = {};
 var Audio = {};
 
+
+/*
+  Simple Singleton implementation
+*/
+
+
 (function() {
   var AEPhaseStatusEnum, AE_CORE_PATH, asyncRequestURL, currentScript, scriptsArray, syncRequestUrl,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  Audio.SubSystem = (function(_super) {
-
-    __extends(SubSystem, _super);
-
-    SubSystem.prototype.buffers = {};
-
-    function SubSystem(filesMap) {
-      try {
-        window.AudioContext = window.AudioContext || window.webkitAudioContext;
-        this.context = new AudioContext();
-        AE.log('AE.Audio: start');
-      } catch (e) {
-        AE.error('AE.Audio : Web Audio API not supported');
-      }
-      this.loadMap(filesMap);
-    }
-
-    SubSystem.prototype.load = function(filePath, name) {
-      var loader,
-        _this = this;
-      loader = AE.Loaders.Manager.getInstance().createURLLoader(filePath, function(file) {
-        return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
-          return _this.context.decodeAudioData(buffer, function(b) {
-            AE.log("AE.Audio: effect " + name + " loaded");
-            return _this.buffers[name] = b;
-          });
-        });
-      });
-      return loader.load();
-    };
-
-    SubSystem.prototype.loadMap = function(filesMap) {
-      var file, name, _results;
-      _results = [];
-      for (name in filesMap) {
-        file = filesMap[name];
-        _results.push(this.load(file(name)));
-      }
-      return _results;
-    };
-
-    SubSystem.prototype.play = function(name) {
-      var source;
-      if (this.buffers[bufferName]) {
-        source = this.buffers.createBufferSource();
-        source.buffer = this.buffers[bufferName];
-        source.connect(this.buffers.destination);
-        return source.start(0);
-      } else {
-        return onError();
-      }
-    };
-
-    return SubSystem;
-
-  })(AE.Object);
-
-  AE.log = function(message) {
-    return console.log(message);
-  };
-
-  AE.debug = function(message) {
-    return console.debug(message);
-  };
-
-  AE.error = function(message) {
-    return console.error(message);
-  };
-
-  /*
-    Simple Singleton implementation
-  */
-
 
   AE.Singleton = (function() {
 
@@ -132,6 +64,201 @@ var Audio = {};
       return AE.error('could\'nt retrieve file: ' + URL);
     }
   };
+
+  /*
+    AEIdFactory class aims to handle object identification through the engine via
+    GUIDs
+    This class follows the Singleton design pattern
+    @extend AEEngine.AESingleton
+  */
+
+
+  AE.IdFactory = (function(_super) {
+
+    __extends(IdFactory, _super);
+
+    IdFactory.prototype._guids = null;
+
+    /*
+          constructor: called on singleton's new instance creation
+    */
+
+
+    function IdFactory() {
+      this._guids = [];
+    }
+
+    /*
+          has: checks if param guid has already been registered
+          @param {String} the GUID to be checked
+          @return {Boolean} whether the guid was found internally or not
+    */
+
+
+    IdFactory.prototype.has = function(guid) {
+      if (this._guids.indexOf(guid.toString()) > -1) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    /*
+        @return {String} a brand new and unique GUID
+    */
+
+
+    IdFactory.prototype.getGUID = function() {
+      var newguid;
+      newguid = this.guid();
+      if (!this.has(newguid)) {
+        this._guids.push(newguid);
+      } else {
+        newguid = this.getGUID();
+      }
+      return newguid;
+    };
+
+    /*
+          GUID GENERATION FUNCTIONS
+    */
+
+
+    IdFactory.prototype.s4 = function() {
+      return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    };
+
+    IdFactory.prototype.guid = function() {
+      return this.s4() + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + this.s4() + this.s4();
+    };
+
+    return IdFactory;
+
+  })(AE.Singleton);
+
+  /*
+      AEObject: a base class for every object in the engine
+  */
+
+
+  AE.Object = (function() {
+
+    function Object() {}
+
+    Object.prototype._guid = null;
+
+    Object.property('guid', {
+      get: function() {
+        if (this._guid === null) {
+          this._guid = AE.IdFactory.getInstance().getGUID();
+        }
+        return this._guid;
+      }
+    });
+
+    /*
+        Init: default initializer for object
+        this method is called upon instanciation of a new object of such class
+    */
+
+
+    Object.prototype.init = function() {};
+
+    /*
+        create: creates a new instance for the given object
+                passes possible arguments to the objects init
+                function.
+                except for exceptions, EVERY instance should
+                be created using this method
+    
+        @return {Object} an instance of the inherriting class
+    */
+
+
+    Object.create = function() {
+      var C, inst;
+      C = this;
+      inst = new C();
+      if (arguments.length > 0) {
+        inst.init(arguments);
+      } else {
+        inst.init();
+      }
+      return inst;
+    };
+
+    return Object;
+
+  })();
+
+  AE.log = function(message) {
+    return console.log(message);
+  };
+
+  AE.debug = function(message) {
+    return console.debug(message);
+  };
+
+  AE.error = function(message) {
+    return console.error(message);
+  };
+
+  Audio.SubSystem = (function(_super) {
+
+    __extends(SubSystem, _super);
+
+    SubSystem.prototype.buffers = {};
+
+    function SubSystem(filesMap) {
+      try {
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.context = new AudioContext();
+        AE.log('AE.Audio: start');
+      } catch (e) {
+        AE.error('AE.Audio : Web Audio API not supported');
+      }
+      this.loadMap(filesMap);
+    }
+
+    SubSystem.prototype.load = function(filePath, name) {
+      var loader,
+        _this = this;
+      loader = AE.Loaders.Manager.getInstance().createURLLoader(filePath, function(file) {
+        return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
+          return _this.context.decodeAudioData(buffer, function(b) {
+            AE.log("AE.Audio: effect " + name + " loaded");
+            return _this.buffers[name] = b;
+          });
+        });
+      });
+      return loader.load();
+    };
+
+    SubSystem.prototype.loadMap = function(filesMap) {
+      var file, name, _results;
+      _results = [];
+      for (name in filesMap) {
+        file = filesMap[name];
+        _results.push(this.load(file, name));
+      }
+      return _results;
+    };
+
+    SubSystem.prototype.play = function(name) {
+      var source;
+      if (this.buffers[name]) {
+        source = this.context.createBufferSource();
+        source.buffer = this.buffers[name];
+        source.connect(this.context.destination);
+        return source.start(0);
+      } else {
+        return onError();
+      }
+    };
+
+    return SubSystem;
+
+  })(AE.Object);
 
   self.requestFileSystem = self.requestFileSystem || self.webkitRequestFileSystem;
 
@@ -271,132 +398,6 @@ var Audio = {};
     return FileSystem;
 
   })(AE.Singleton);
-
-  /*
-    AEIdFactory class aims to handle object identification through the engine via
-    GUIDs
-    This class follows the Singleton design pattern
-    @extend AEEngine.AESingleton
-  */
-
-
-  AE.IdFactory = (function(_super) {
-
-    __extends(IdFactory, _super);
-
-    IdFactory.prototype._guids = null;
-
-    /*
-          constructor: called on singleton's new instance creation
-    */
-
-
-    function IdFactory() {
-      this._guids = [];
-    }
-
-    /*
-          has: checks if param guid has already been registered
-          @param {String} the GUID to be checked
-          @return {Boolean} whether the guid was found internally or not
-    */
-
-
-    IdFactory.prototype.has = function(guid) {
-      if (this._guids.indexOf(guid.toString()) > -1) {
-        return true;
-      } else {
-        return false;
-      }
-    };
-
-    /*
-        @return {String} a brand new and unique GUID
-    */
-
-
-    IdFactory.prototype.getGUID = function() {
-      var newguid;
-      newguid = this.guid();
-      if (!this.has(newguid)) {
-        this._guids.push(newguid);
-      } else {
-        newguid = this.getGUID();
-      }
-      return newguid;
-    };
-
-    /*
-          GUID GENERATION FUNCTIONS
-    */
-
-
-    IdFactory.prototype.s4 = function() {
-      return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-    };
-
-    IdFactory.prototype.guid = function() {
-      return this.s4() + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + "-" + this.s4() + this.s4() + this.s4();
-    };
-
-    return IdFactory;
-
-  })(AE.Singleton);
-
-  /*
-      AEObject: a base class for every object in the engine
-  */
-
-
-  AE.Object = (function() {
-
-    function Object() {}
-
-    Object.prototype._guid = null;
-
-    Object.property('guid', {
-      get: function() {
-        if (this._guid === null) {
-          this._guid = AE.IdFactory.getInstance().getGUID();
-        }
-        return this._guid;
-      }
-    });
-
-    /*
-        Init: default initializer for object
-        this method is called upon instanciation of a new object of such class
-    */
-
-
-    Object.prototype.init = function() {};
-
-    /*
-        create: creates a new instance for the given object
-                passes possible arguments to the objects init
-                function.
-                except for exceptions, EVERY instance should
-                be created using this method
-    
-        @return {Object} an instance of the inherriting class
-    */
-
-
-    Object.create = function() {
-      var C, inst;
-      C = this;
-      inst = new C();
-      if (arguments.length > 0) {
-        inst.init(arguments);
-      } else {
-        inst.init();
-      }
-      return inst;
-    };
-
-    return Object;
-
-  })();
 
   AE.Loaders.URLLoader = (function(_super) {
 
@@ -1014,12 +1015,15 @@ var Audio = {};
 
     Engine.prototype.context = null;
 
+    Engine.prototype.systems = {};
+
     function Engine() {
       AE.log('AE.Audio: start');
     }
 
     Engine.prototype.createSubSystem = function(name, filesMap) {
-      return this.systems[name] = new AE.Audio.System(filesMap);
+      this.systems[name] = new AE.Audio.SubSystem(filesMap);
+      return this.systems[name];
     };
 
     return Engine;
