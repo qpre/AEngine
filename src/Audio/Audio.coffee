@@ -5,11 +5,12 @@ AE.Audio = Audio
 
 class Audio.Engine extends AE.Engine
   context: null
-  systems: {}
+  effectsSystems: {}
+  musicSystems: {}
   
   constructor: () ->
     AE.log 'AE.Audio: start'
   
-  createSubSystem: (name, filesMap) ->
-    @systems[name] = new AE.Audio.SubSystem(filesMap)
-    @systems[name]
+  createEffectsSubSystem: (name, filesMap) ->
+    @effectsSystems[name] = new AE.Audio.EffectsSubSystem(filesMap)
+    @effectsSystems[name]
