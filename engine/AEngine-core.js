@@ -1,4 +1,4 @@
-var AE = {'MVC':{},'States':{},'Workers':{}};
+var AE = {'Assets':{},'MVC':{},'States':{},'Workers':{}};
 var Game = {};
 var Audio = {};
 
@@ -529,12 +529,6 @@ var Audio = {};
 
   })(AE.Object);
 
-  if (self.document) {
-    scriptsArray = document.getElementsByTagName('script');
-    currentScript = scriptsArray[scriptsArray.length - 1];
-    AE_CORE_PATH = currentScript.src.replace(/\/script\.js$/, '/');
-  }
-
   self.requestFileSystem = self.requestFileSystem || self.webkitRequestFileSystem;
 
   self.requestFileSystemAsync = self.requestFileSystem || self.webkitRequestFileSystem;
@@ -673,6 +667,125 @@ var Audio = {};
     return FileSystem;
 
   })(AE.Singleton);
+
+  /*
+  	TODO: Handle names collisions
+  */
+
+
+  AE.Assets.Manager = (function(_super) {
+
+    __extends(Manager, _super);
+
+    function Manager() {
+      return Manager.__super__.constructor.apply(this, arguments);
+    }
+
+    Manager.prototype._assetsOrigin = [];
+
+    Manager.prototype._assets = {};
+
+    Manager.prototype.register = function(filesMap) {
+      var assetName, assetPath, _results;
+      _results = [];
+      for (assetName in filesMap) {
+        assetPath = filesMap[assetName];
+        this._assetsOrigin.push({
+          name: assetName,
+          path: assetPath
+        });
+        _results.push(this._assets[name] = null);
+      }
+      return _results;
+    };
+
+    Manager.prototype.load = function(onReady, onOneAssetLoaded) {
+      var asset, loader, _i, _len, _ref, _results,
+        _this = this;
+      this.remaining = this._assetsOrigin.length;
+      _ref = this._assetsOrigin;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        asset = _ref[_i];
+        loader = this.createURLLoader(asset.path, function(file) {
+          _this._assets[asset.name] = file;
+          _this.remaining--;
+          onOneAssetLoaded(_this.remaining);
+          if (_this.remaining === 0) {
+            return onReady();
+          }
+        });
+        _results.push(loader.load());
+      }
+      return _results;
+    };
+
+    Manager.prototype.get = function(name) {
+      if (this._assets[name] === null) {
+        return AE.log("" + name + " not loaded yet");
+      } else if (this._assets[name] === void 0) {
+        return AE.error("" + name + " not referenced");
+      } else {
+        return this._assets[name];
+      }
+    };
+
+    Manager.prototype.createURLLoader = function(fileURL, onSuccess) {
+      var loader;
+      loader = new AE.Assets.URLLoader(fileURL, onSuccess);
+      return loader;
+    };
+
+    return Manager;
+
+  })(AE.Singleton);
+
+  AE.Assets.URLLoader = (function(_super) {
+
+    __extends(URLLoader, _super);
+
+    URLLoader.prototype.isReady = false;
+
+    URLLoader.prototype._fileURL = null;
+
+    URLLoader.prototype._file = null;
+
+    function URLLoader(_fileURL, _onSuccess, _filepath) {
+      this._fileURL = _fileURL;
+      this._onSuccess = _onSuccess;
+      this._filepath = _filepath;
+      if (!this._filepath) {
+        this._filepath = this.guid;
+      }
+      this.guid;
+    }
+
+    URLLoader.prototype.load = function() {
+      if (this._fileURL) {
+        return this.requestURL();
+      } else {
+        return AE.error('no file URL were specified');
+      }
+    };
+
+    URLLoader.prototype.requestURL = function() {
+      var _this = this;
+      return asyncRequestURL(this._fileURL, function(blob) {
+        return AE.FileSystem.getInstance().writeFile(_this.guid, blob, function() {
+          return _this._onSuccess(_this._filepath);
+        });
+      });
+    };
+
+    return URLLoader;
+
+  })(AE.Object);
+
+  if (self.document) {
+    scriptsArray = document.getElementsByTagName('script');
+    currentScript = scriptsArray[scriptsArray.length - 1];
+    AE_CORE_PATH = currentScript.src.replace(/\/script\.js$/, '/');
+  }
 
   AE.MVC.Controller = (function() {
 
@@ -945,21 +1058,25 @@ var Audio = {};
     Effect.prototype.loaded = false;
 
     function Effect(name, context, callback) {
-      var file,
-        _this = this;
       this.name = name;
       this.context = context;
-      file = AE.Assets.Manager.getInstance().get(name, AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
+      this.callback = callback;
+    }
+
+    Effect.prototype.prepare = function() {
+      var file,
+        _this = this;
+      file = AE.Assets.Manager.getInstance().get(this.name);
+      return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
         return _this.context.decodeAudioData(buffer, function(b) {
           _this.buffer = b;
           _this.loaded = true;
-          if (callback) {
-            return callback();
+          if (_this.callback) {
+            return _this.callback();
           }
         });
-      }));
-      loader.load();
-    }
+      });
+    };
 
     Effect.prototype.fire = function() {
       var source;
@@ -997,6 +1114,17 @@ var Audio = {};
       } else {
         return onError();
       }
+    };
+
+    EffectsSubSystem.prototype.prepare = function() {
+      var name, sound, _ref, _results;
+      _ref = this.sounds;
+      _results = [];
+      for (name in _ref) {
+        sound = _ref[name];
+        _results.push(sound.prepare());
+      }
+      return _results;
     };
 
     return EffectsSubSystem;
