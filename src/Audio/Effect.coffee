@@ -8,11 +8,10 @@
 #
 
 class Audio.Effect extends AE.Object
-  name: null
+  name:     null
   
   context:  null
   buffer:   null
-  context:  null
   
   loaded:   false
   
