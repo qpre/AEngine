@@ -195,10 +195,6 @@ var Audio = {};
 
     __extends(SubSystem, _super);
 
-    SubSystem.prototype.sounds = {};
-
-    SubSystem.prototype.context = null;
-
     function SubSystem(names) {
       try {
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -668,78 +664,6 @@ var Audio = {};
 
   })(AE.Singleton);
 
-  /*
-  	TODO: Handle names collisions
-  */
-
-
-  AE.Assets.Manager = (function(_super) {
-
-    __extends(Manager, _super);
-
-    function Manager() {
-      return Manager.__super__.constructor.apply(this, arguments);
-    }
-
-    Manager.prototype._assetsOrigin = [];
-
-    Manager.prototype._assets = {};
-
-    Manager.prototype.register = function(filesMap) {
-      var assetName, assetPath, _results;
-      _results = [];
-      for (assetName in filesMap) {
-        assetPath = filesMap[assetName];
-        this._assetsOrigin.push({
-          name: assetName,
-          path: assetPath
-        });
-        _results.push(this._assets[name] = null);
-      }
-      return _results;
-    };
-
-    Manager.prototype.load = function(onReady, onOneAssetLoaded) {
-      var asset, loader, _i, _len, _ref, _results,
-        _this = this;
-      this.remaining = this._assetsOrigin.length;
-      _ref = this._assetsOrigin;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        asset = _ref[_i];
-        loader = this.createURLLoader(asset.path, function(file) {
-          _this._assets[asset.name] = file;
-          _this.remaining--;
-          onOneAssetLoaded(_this.remaining);
-          if (_this.remaining === 0) {
-            return onReady();
-          }
-        });
-        _results.push(loader.load());
-      }
-      return _results;
-    };
-
-    Manager.prototype.get = function(name) {
-      if (this._assets[name] === null) {
-        return AE.log("" + name + " not loaded yet");
-      } else if (this._assets[name] === void 0) {
-        return AE.error("" + name + " not referenced");
-      } else {
-        return this._assets[name];
-      }
-    };
-
-    Manager.prototype.createURLLoader = function(fileURL, onSuccess) {
-      var loader;
-      loader = new AE.Assets.URLLoader(fileURL, onSuccess);
-      return loader;
-    };
-
-    return Manager;
-
-  })(AE.Singleton);
-
   AE.Assets.URLLoader = (function(_super) {
 
     __extends(URLLoader, _super);
@@ -780,6 +704,84 @@ var Audio = {};
     return URLLoader;
 
   })(AE.Object);
+
+  /*
+  	TODO: Handle names collisions
+  */
+
+
+  AE.Assets.Manager = (function(_super) {
+
+    __extends(Manager, _super);
+
+    function Manager() {
+      return Manager.__super__.constructor.apply(this, arguments);
+    }
+
+    Manager.prototype.assetsOrigin = [];
+
+    Manager.prototype.assets = {};
+
+    Manager.prototype.register = function(filesMap) {
+      var assetName, assetPath, _results;
+      _results = [];
+      for (assetName in filesMap) {
+        assetPath = filesMap[assetName];
+        this.assetsOrigin.push({
+          name: assetName,
+          path: assetPath
+        });
+        _results.push(this.assets[assetName] = null);
+      }
+      return _results;
+    };
+
+    Manager.prototype.load = function(onReady, onOneAssetLoaded) {
+      var asset, _i, _len, _ref, _results;
+      this.remaining = this.assetsOrigin.length;
+      _ref = this.assetsOrigin;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        asset = _ref[_i];
+        _results.push(this.loadSingleAsset(asset, onReady, onOneAssetLoaded));
+      }
+      return _results;
+    };
+
+    Manager.prototype.loadSingleAsset = function(asset, onReady, onOneAssetLoaded) {
+      var loader,
+        _this = this;
+      loader = this.createURLLoader(asset.path, function(file) {
+        console.log("" + asset.name + " ready");
+        _this.assets[asset.name] = file;
+        _this.remaining = _this.remaining - 1;
+        onOneAssetLoaded();
+        if (_this.remaining === 0) {
+          return onReady();
+        }
+      });
+      return loader.load();
+    };
+
+    Manager.prototype.get = function(name) {
+      if (this.assets[name] === null) {
+        return AE.log("" + name + " not loaded yet");
+      } else if (this.assets[name] === void 0) {
+        return AE.error("" + name + " not referenced");
+      } else {
+        return this.assets[name];
+      }
+    };
+
+    Manager.prototype.createURLLoader = function(fileURL, onSuccess) {
+      var loader;
+      loader = new AE.Assets.URLLoader(fileURL, onSuccess);
+      return loader;
+    };
+
+    return Manager;
+
+  })(AE.Singleton);
 
   if (self.document) {
     scriptsArray = document.getElementsByTagName('script');
@@ -1039,6 +1041,11 @@ var Audio = {};
       return this.effectsSystems[name];
     };
 
+    Engine.prototype.createMusicSubSystem = function(name, musicsMap) {
+      this.musicSystems[name] = new AE.Audio.MusicSubSystem(musicsMap);
+      return this.musicSystems[name];
+    };
+
     return Engine;
 
   })(AE.Engine);
@@ -1053,8 +1060,6 @@ var Audio = {};
 
     Effect.prototype.buffer = null;
 
-    Effect.prototype.context = null;
-
     Effect.prototype.loaded = false;
 
     function Effect(name, context, callback) {
@@ -1063,7 +1068,7 @@ var Audio = {};
       this.callback = callback;
     }
 
-    Effect.prototype.prepare = function() {
+    Effect.prototype.prepare = function(onPrepared) {
       var file,
         _this = this;
       file = AE.Assets.Manager.getInstance().get(this.name);
@@ -1071,8 +1076,8 @@ var Audio = {};
         return _this.context.decodeAudioData(buffer, function(b) {
           _this.buffer = b;
           _this.loaded = true;
-          if (_this.callback) {
-            return _this.callback();
+          if (onPrepared) {
+            return onPrepared();
           }
         });
       });
@@ -1098,12 +1103,19 @@ var Audio = {};
       return EffectsSubSystem.__super__.constructor.apply(this, arguments);
     }
 
+    EffectsSubSystem.prototype.sounds = {};
+
+    EffectsSubSystem.prototype.context = null;
+
+    EffectsSubSystem.prototype.length = 0;
+
     EffectsSubSystem.prototype.loadMap = function(names) {
       var name, _i, _len, _results;
       _results = [];
       for (_i = 0, _len = names.length; _i < _len; _i++) {
         name = names[_i];
-        _results.push(this.sounds[name] = new AE.Audio.Effect(name, this.context));
+        this.sounds[name] = new AE.Audio.Effect(name, this.context);
+        _results.push(this.length++);
       }
       return _results;
     };
@@ -1116,18 +1128,129 @@ var Audio = {};
       }
     };
 
-    EffectsSubSystem.prototype.prepare = function() {
-      var name, sound, _ref, _results;
+    EffectsSubSystem.prototype.prepare = function(onPrepared) {
+      var name, onPreparedSound, remainingEffects, sound, _ref, _results;
+      remainingEffects = this.length;
+      onPreparedSound = (function() {
+        remainingEffects = remainingEffects - 1;
+        if (remainingEffects === 0) {
+          return onPrepared();
+        }
+      }).bind(this, remainingEffects, onPrepared);
       _ref = this.sounds;
       _results = [];
       for (name in _ref) {
         sound = _ref[name];
-        _results.push(sound.prepare());
+        _results.push(sound.prepare(onPreparedSound));
       }
       return _results;
     };
 
     return EffectsSubSystem;
+
+  })(Audio.SubSystem);
+
+  Audio.Music = (function(_super) {
+
+    __extends(Music, _super);
+
+    Music.prototype.name = null;
+
+    Music.prototype.context = null;
+
+    Music.prototype.buffer = null;
+
+    Music.prototype.loaded = false;
+
+    function Music(name, context, callback) {
+      this.name = name;
+      this.context = context;
+      this.callback = callback;
+    }
+
+    Music.prototype.prepare = function(onPrepared) {
+      var file,
+        _this = this;
+      file = AE.Assets.Manager.getInstance().get(this.name);
+      return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
+        return _this.context.decodeAudioData(buffer, function(b) {
+          _this.buffer = b;
+          _this.loaded = true;
+          if (onPrepared) {
+            return onPrepared();
+          }
+        });
+      });
+    };
+
+    Music.prototype.play = function() {
+      var source;
+      if (this.loaded === true) {
+        source = this.context.createBufferSource();
+        source.buffer = this.buffer;
+        source.connect(this.context.destination);
+        return source.start(0);
+      } else {
+        return AE.error("[MUSIC] not loaded yet: " + this.name);
+      }
+    };
+
+    return Music;
+
+  })(AE.Object);
+
+  Audio.MusicSubSystem = (function(_super) {
+
+    __extends(MusicSubSystem, _super);
+
+    function MusicSubSystem() {
+      return MusicSubSystem.__super__.constructor.apply(this, arguments);
+    }
+
+    MusicSubSystem.prototype.sounds = {};
+
+    MusicSubSystem.prototype.context = null;
+
+    MusicSubSystem.prototype.length = 0;
+
+    MusicSubSystem.prototype.loadMap = function(names) {
+      var name, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = names.length; _i < _len; _i++) {
+        name = names[_i];
+        this.sounds[name] = new AE.Audio.Music(name, this.context);
+        _results.push(this.length++);
+      }
+      return _results;
+    };
+
+    MusicSubSystem.prototype.play = function(name) {
+      if (this.sounds[name]) {
+        return this.sounds[name].play();
+      } else {
+        return onError();
+      }
+    };
+
+    MusicSubSystem.prototype.prepare = function(onPrepared) {
+      var name, onPreparedSound, remainingMusic, sound, _ref, _results;
+      remainingMusic = this.length;
+      onPreparedSound = (function() {
+        remainingMusic = remainingMusic - 1;
+        if (remainingMusic === 0) {
+          return onPrepared();
+        }
+      }).bind(this, remainingMusic, onPrepared);
+      _ref = this.sounds;
+      _results = [];
+      for (name in _ref) {
+        sound = _ref[name];
+        _results.push(sound.prepare(onPreparedSound));
+      }
+      return _results;
+    };
+
+    return MusicSubSystem;
 
   })(Audio.SubSystem);
 
