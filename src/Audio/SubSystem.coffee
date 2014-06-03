@@ -1,9 +1,6 @@
 #<< AE/Object
 
 class Audio.SubSystem extends AE.Object
-  sounds: {}
-  context: null
-  
   constructor: (names) ->
     try
       window.AudioContext = window.AudioContext||window.webkitAudioContext

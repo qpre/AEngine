@@ -1,13 +1,10 @@
 #<< AE/Object
 
 #
-# Effects are intended to be short sounds, they don't require anything more
-# than a fire functionnality
-#
-# TODO: Handling of 2D and 3D Audio
+# Musics intends to be long-playing sounds
 #
 
-class Audio.Effect extends AE.Object
+class Audio.Music extends AE.Object
   name:     null
   
   context:  null
@@ -24,9 +21,12 @@ class Audio.Effect extends AE.Object
         @buffer = b
         @loaded = true
         if (onPrepared) then onPrepared()
-  
-  fire: () ->
-    source = @context.createBufferSource()
-    source.buffer = @buffer
-    source.connect @context.destination
-    source.start(0)
+        
+  play: () ->
+    if @loaded == true
+      source = @context.createBufferSource()
+      source.buffer = @buffer
+      source.connect @context.destination
+      source.start(0)
+    else
+      AE.error "[MUSIC] not loaded yet: #{@name}"

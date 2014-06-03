@@ -14,3 +14,7 @@ class Audio.Engine extends AE.Engine
   createEffectsSubSystem: (name, effectsMap) ->
     @effectsSystems[name] = new AE.Audio.EffectsSubSystem(effectsMap)
     @effectsSystems[name]
+    
+  createMusicSubSystem: (name, musicsMap) ->
+    @musicSystems[name] = new AE.Audio.MusicSubSystem(musicsMap)
+    @musicSystems[name]
