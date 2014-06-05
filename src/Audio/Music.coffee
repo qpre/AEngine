@@ -7,26 +7,27 @@
 class Audio.Music extends AE.Object
   name:     null
   
-  context:  null
+  system:  null
   buffer:   null
   
   loaded:   false
   
-  constructor: (@name, @context, @callback) ->
+  constructor: (@name, @system, @callback) ->
 
   prepare: (onPrepared) ->
     file = AE.Assets.Manager.getInstance().get @name
     AE.FileSystem.getInstance().readBuffer file, (buffer) =>
-      @context.decodeAudioData buffer, (b) =>
+      @system.context.decodeAudioData buffer, (b) =>
         @buffer = b
         @loaded = true
         if (onPrepared) then onPrepared()
         
   play: () ->
     if @loaded == true
-      source = @context.createBufferSource()
+      source = @system.context.createBufferSource()
       source.buffer = @buffer
-      source.connect @context.destination
+      source.connect @system.gainNode
+      source.loop = true
       source.start(0)
     else
       AE.error "[MUSIC] not loaded yet: #{@name}"

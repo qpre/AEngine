@@ -10,23 +10,23 @@
 class Audio.Effect extends AE.Object
   name:     null
   
-  context:  null
+  system:  null
   buffer:   null
   
   loaded:   false
   
-  constructor: (@name, @context, @callback) ->
+  constructor: (@name, @system, @callback) ->
 
   prepare: (onPrepared) ->
     file = AE.Assets.Manager.getInstance().get @name
     AE.FileSystem.getInstance().readBuffer file, (buffer) =>
-      @context.decodeAudioData buffer, (b) =>
+      @system.context.decodeAudioData buffer, (b) =>
         @buffer = b
         @loaded = true
         if (onPrepared) then onPrepared()
   
   fire: () ->
-    source = @context.createBufferSource()
+    source = @system.context.createBufferSource()
     source.buffer = @buffer
-    source.connect @context.destination
+    source.connect @system.gainNode
     source.start(0)

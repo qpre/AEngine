@@ -8,7 +8,7 @@ class Audio.EffectsSubSystem extends Audio.SubSystem
   
   loadMap: (names) ->
     for name in names
-      @sounds[name] = new AE.Audio.Effect name, @context
+      @sounds[name] = new AE.Audio.Effect name, @
       @length++
   
   fire: (name) ->

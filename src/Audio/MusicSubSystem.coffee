@@ -8,7 +8,7 @@ class Audio.MusicSubSystem extends Audio.SubSystem
 
   loadMap: (names) ->
     for name in names
-      @sounds[name] = new AE.Audio.Music name, @context
+      @sounds[name] = new AE.Audio.Music name, @
       @length++
 
   play: (name) ->
