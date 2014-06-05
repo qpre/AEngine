@@ -11,3 +11,6 @@ class Audio.SubSystem extends AE.Object
       AE.error 'AE.Audio : Web Audio API not supported'
       
     @loadMap names
+    
+  setVolume: (value) ->
+    this.gainNode.gain.value = value / 100
