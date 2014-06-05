@@ -207,6 +207,10 @@ var Audio = {};
       this.loadMap(names);
     }
 
+    SubSystem.prototype.setVolume = function(value) {
+      return this.gainNode.gain.value = value / 100;
+    };
+
     return SubSystem;
 
   })(AE.Object);
