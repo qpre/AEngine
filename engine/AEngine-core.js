@@ -199,6 +199,8 @@ var Audio = {};
       try {
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         this.context = new AudioContext();
+        this.gainNode = this.context.createGainNode();
+        this.gainNode.connect(this.context.destination);
       } catch (e) {
         AE.error('AE.Audio : Web Audio API not supported');
       }
@@ -1056,15 +1058,15 @@ var Audio = {};
 
     Effect.prototype.name = null;
 
-    Effect.prototype.context = null;
+    Effect.prototype.system = null;
 
     Effect.prototype.buffer = null;
 
     Effect.prototype.loaded = false;
 
-    function Effect(name, context, callback) {
+    function Effect(name, system, callback) {
       this.name = name;
-      this.context = context;
+      this.system = system;
       this.callback = callback;
     }
 
@@ -1073,7 +1075,7 @@ var Audio = {};
         _this = this;
       file = AE.Assets.Manager.getInstance().get(this.name);
       return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
-        return _this.context.decodeAudioData(buffer, function(b) {
+        return _this.system.context.decodeAudioData(buffer, function(b) {
           _this.buffer = b;
           _this.loaded = true;
           if (onPrepared) {
@@ -1085,9 +1087,9 @@ var Audio = {};
 
     Effect.prototype.fire = function() {
       var source;
-      source = this.context.createBufferSource();
+      source = this.system.context.createBufferSource();
       source.buffer = this.buffer;
-      source.connect(this.context.destination);
+      source.connect(this.system.gainNode);
       return source.start(0);
     };
 
@@ -1114,7 +1116,7 @@ var Audio = {};
       _results = [];
       for (_i = 0, _len = names.length; _i < _len; _i++) {
         name = names[_i];
-        this.sounds[name] = new AE.Audio.Effect(name, this.context);
+        this.sounds[name] = new AE.Audio.Effect(name, this);
         _results.push(this.length++);
       }
       return _results;
@@ -1156,15 +1158,15 @@ var Audio = {};
 
     Music.prototype.name = null;
 
-    Music.prototype.context = null;
+    Music.prototype.system = null;
 
     Music.prototype.buffer = null;
 
     Music.prototype.loaded = false;
 
-    function Music(name, context, callback) {
+    function Music(name, system, callback) {
       this.name = name;
-      this.context = context;
+      this.system = system;
       this.callback = callback;
     }
 
@@ -1173,7 +1175,7 @@ var Audio = {};
         _this = this;
       file = AE.Assets.Manager.getInstance().get(this.name);
       return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
-        return _this.context.decodeAudioData(buffer, function(b) {
+        return _this.system.context.decodeAudioData(buffer, function(b) {
           _this.buffer = b;
           _this.loaded = true;
           if (onPrepared) {
@@ -1186,9 +1188,10 @@ var Audio = {};
     Music.prototype.play = function() {
       var source;
       if (this.loaded === true) {
-        source = this.context.createBufferSource();
+        source = this.system.context.createBufferSource();
         source.buffer = this.buffer;
-        source.connect(this.context.destination);
+        source.connect(this.system.gainNode);
+        source.loop = true;
         return source.start(0);
       } else {
         return AE.error("[MUSIC] not loaded yet: " + this.name);
@@ -1218,7 +1221,7 @@ var Audio = {};
       _results = [];
       for (_i = 0, _len = names.length; _i < _len; _i++) {
         name = names[_i];
-        this.sounds[name] = new AE.Audio.Music(name, this.context);
+        this.sounds[name] = new AE.Audio.Music(name, this);
         _results.push(this.length++);
       }
       return _results;
