@@ -7,6 +7,7 @@
 class AE.Assets.Manager extends AE.Singleton
   assetsOrigin: [] # contains all the assets definitions
   assets: {} # contains all the loaded assets
+  manifest: {}
   
   register: (filesMap) ->
     for assetName, assetPath of filesMap
