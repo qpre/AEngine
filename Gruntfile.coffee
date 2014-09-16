@@ -4,7 +4,8 @@ module.exports = (grunt) ->
   GROUPS = {
     "src/Core":"AE",
     "src/Game": "Game",
-    "src/Audio":"Audio"
+    "src/Audio":"Audio",
+    "src/Network": "Network"
   }
 
   grunt.initConfig
