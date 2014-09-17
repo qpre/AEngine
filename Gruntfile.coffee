@@ -4,6 +4,7 @@ module.exports = (grunt) ->
   GROUPS = {
     "src/Core":"AE",
     "src/Game": "Game",
+    "src/Graphics": "Graphics",
     "src/Audio":"Audio",
     "src/Network": "Network"
   }
@@ -40,24 +41,6 @@ module.exports = (grunt) ->
           src: ["src/**/*.coffee"]
         options:
           force: true # pass to false if you want strict 
-
-    closurecompiler:
-      all:
-        files:
-          "build/AEngine-core.min.js": ["build/AEngine-core.js"]
-        options:
-          banner: BANNER
-          compilation_level: 'ADVANCED_OPTIMIZATIONS'
-          summary_detail_level: 3
-
-    uglify:
-      all:
-        options:
-          mangle: true
-          banner: BANNER
-        files: {
-          'build/AEngine-core.min.js': 'build/AEngine-core.js'
-        }
 
     bower:
       install: {}
@@ -166,9 +149,6 @@ module.exports = (grunt) ->
     grunt.loadNpmTasks "grunt-bower-task"
     grunt.loadNpmTasks "grunt-contrib-copy"
     grunt.loadNpmTasks 'grunt-coffee-toaster'
-    # grunt.loadNpmTasks "grunt-contrib-uglify"
-    # grunt.loadNpmTasks "grunt-contrib-coffee"
-    # grunt.loadNpmTasks "grunt-closurecompiler"
 
     grunt.task.run "coffeelint", "shell:createBuild","bower:install", "toaster", "copy"
 
