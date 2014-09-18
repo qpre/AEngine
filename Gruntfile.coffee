@@ -4,7 +4,7 @@ module.exports = (grunt) ->
   GROUPS = {
     "src/Core":"AE",
     "src/Game": "Game",
-    "src/Graphics": "Graphics",
+    "src/Graphics2D": "Graphics2D",
     "src/Audio":"Audio",
     "src/Network": "Network"
   }
@@ -146,11 +146,10 @@ module.exports = (grunt) ->
   grunt.registerTask "compile" , [], () ->
     grunt.loadNpmTasks 'grunt-shell'
     grunt.loadNpmTasks 'grunt-coffeelint'
-    grunt.loadNpmTasks "grunt-bower-task"
     grunt.loadNpmTasks "grunt-contrib-copy"
     grunt.loadNpmTasks 'grunt-coffee-toaster'
 
-    grunt.task.run "coffeelint", "shell:createBuild","bower:install", "toaster", "copy"
+    grunt.task.run "coffeelint", "shell:createBuild", "toaster", "copy"
 
   grunt.registerTask "build", ["cleanbuild", "compile"]
 
