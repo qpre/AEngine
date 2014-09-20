@@ -5,9 +5,10 @@ var Audio = {};
 var Network = {};
 
 (function() {
-  var AEPhaseStatusEnum, AE_CORE_PATH, asyncRequestURL, currentScript, scriptsArray, syncRequestUrl,
+  var AEPhaseStatusEnum, AE_CORE_PATH, asyncRequestURL, currentScript, moduleKeywords, scriptsArray, syncRequestUrl,
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   AE.Network = Network;
 
@@ -139,6 +140,8 @@ var Network = {};
 
   })(AE.Singleton);
 
+  moduleKeywords = ['extended', 'included'];
+
   /*
       AEObject: a base class for every object in the engine
   */
@@ -188,6 +191,40 @@ var Network = {};
         inst.init();
       }
       return inst;
+    };
+
+    /*
+        Extension pattern:
+        based on http://arcturo.github.io/library/coffeescript/03_classes.html
+    */
+
+
+    Object.extend = function(obj) {
+      var key, value, _ref;
+      for (key in obj) {
+        value = obj[key];
+        if (__indexOf.call(moduleKeywords, key) < 0) {
+          this[key] = value;
+        }
+      }
+      if ((_ref = obj.extended) != null) {
+        _ref.apply(this);
+      }
+      return this;
+    };
+
+    Object.include = function(obj) {
+      var key, value, _ref;
+      for (key in obj) {
+        value = obj[key];
+        if (__indexOf.call(moduleKeywords, key) < 0) {
+          this.prototype[key] = value;
+        }
+      }
+      if ((_ref = obj.included) != null) {
+        _ref.apply(this);
+      }
+      return this;
     };
 
     return Object;
@@ -1043,6 +1080,8 @@ var Network = {};
 
     __extends(Circle, _super);
 
+    Circle.extend(Graphics2D.Drawable);
+
     function Circle(x, y, radius, strokeStyle, strokeSize) {
       this.x = x;
       this.y = y;
@@ -1062,7 +1101,7 @@ var Network = {};
 
     return Circle;
 
-  })(Graphics2D.Drawable);
+  })(AE.Object);
 
   Graphics2D.Geometry.Rectangle = (function(_super) {
 
