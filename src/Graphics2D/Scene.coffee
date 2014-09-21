@@ -6,6 +6,7 @@ class Graphics2D.Scene extends AE.Object
   constructor: (@_width, @_height) ->
     @_dom = document.createElement 'canvas'
     @resize @_width, @_height
+    @initGestures()
 
   resize: (@_width, @_height) ->
     @_dom.height = @_height
@@ -56,3 +57,25 @@ class Graphics2D.Scene extends AE.Object
   stop: () ->
     if @_timer then cancelAnimationFrame @_timer
     @_timer = null
+
+  ###
+    Gestures
+    This part handles the click events inside a 2D canvas scene.
+    todo: move to a different entity
+  ###
+  initGestures: () ->
+    # click event
+    @_dom.addEventListener 'mousedown', ((event) => @onClick(event)), false
+
+  onClick: (event) ->
+    x = event.pageX
+    y = event.pageY
+    intersects = []
+    for own guid, drawable of @_drawables
+      if drawable.intersects and drawable.intersects(x, y)
+        intersects.push drawable
+
+    #FIXME: resolve z-index
+
+    for intersect in intersects
+      intersect.onClick()

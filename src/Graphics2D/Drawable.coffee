@@ -1,4 +1,6 @@
 #<< AE/Object
-class Graphics2D.Drawable extends AE.Object
+class Graphics2D.Drawable
   update: () ->
+
   draw: (ctx) ->
+    
