@@ -4,7 +4,9 @@ module.exports = (grunt) ->
   GROUPS = {
     "src/Core":"AE",
     "src/Game": "Game",
+    "src/Graphics": "Graphics",
     "src/Graphics2D": "Graphics2D",
+    "src/Graphics3D": "Graphics3D",
     "src/Audio":"Audio",
     "src/Network": "Network"
   }
