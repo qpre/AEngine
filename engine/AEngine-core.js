@@ -1,6 +1,8 @@
 var AE = {'Assets':{},'MVC':{},'States':{},'Workers':{}};
 var Game = {};
+var Graphics = {};
 var Graphics2D = {'Geometry':{}};
+var Graphics3D = {};
 var Audio = {};
 var Network = {};
 
@@ -1060,13 +1062,25 @@ var Network = {};
     }
   })();
 
-  Graphics2D.Drawable = (function(_super) {
+  Graphics2D.Clickable = (function() {
 
-    __extends(Drawable, _super);
+    function Clickable() {}
 
-    function Drawable() {
-      return Drawable.__super__.constructor.apply(this, arguments);
-    }
+    Clickable.prototype.intersects = function(x, y) {
+      return false;
+    };
+
+    Clickable.prototype.onClick = function() {
+      return console.log("Baby touch me one more time");
+    };
+
+    return Clickable;
+
+  })();
+
+  Graphics2D.Drawable = (function() {
+
+    function Drawable() {}
 
     Drawable.prototype.update = function() {};
 
@@ -1074,29 +1088,42 @@ var Network = {};
 
     return Drawable;
 
-  })(AE.Object);
+  })();
 
   Graphics2D.Geometry.Circle = (function(_super) {
 
     __extends(Circle, _super);
 
-    Circle.extend(Graphics2D.Drawable);
+    Circle.include(Graphics2D.Drawable);
+
+    Circle.include(Graphics2D.Clickable);
 
     function Circle(x, y, radius, strokeStyle, strokeSize) {
       this.x = x;
       this.y = y;
       this.radius = radius;
-      this.strokeStyle = strokeStyle != null ? strokeStyle : '#003300';
+      this.strokeStyle = strokeStyle != null ? strokeStyle : "#00FF00";
       this.strokeSize = strokeSize != null ? strokeSize : 1;
-      Circle.__super__.constructor.apply(this, arguments);
+      this.squareRadius = this.radius * this.radius;
     }
 
     Circle.prototype.draw = function(ctx) {
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
-      ctx.lineWidth = this.size;
-      ctx.strokeStyle = '#003300';
+      ctx.lineWidth = this.strokeSize;
+      ctx.strokeStyle = this.strokeStyle;
       return ctx.stroke();
+    };
+
+    Circle.prototype.intersects = function(x, y) {
+      if ((x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) <= this.squareRadius) {
+        return true;
+      }
+      return false;
+    };
+
+    Circle.prototype.onClick = function() {
+      return console.log("Baby touch me one more time");
     };
 
     return Circle;
@@ -1113,10 +1140,10 @@ var Network = {};
       this.width = width;
       this.height = height;
       this.color = color;
-      Rectangle.__super__.constructor.apply(this, arguments);
     }
 
     Rectangle.prototype.draw = function(ctx) {
+      Rectangle.__super__.draw.apply(this, arguments);
       ctx.fillStyle = this.color;
       return ctx.fillRect(this.x, this.y, this.width, this.height);
     };
@@ -1138,6 +1165,7 @@ var Network = {};
       this._height = _height;
       this._dom = document.createElement('canvas');
       this.resize(this._width, this._height);
+      this.initGestures();
     }
 
     Scene.prototype.resize = function(_width, _height) {
@@ -1230,6 +1258,72 @@ var Network = {};
         cancelAnimationFrame(this._timer);
       }
       return this._timer = null;
+    };
+
+    /*
+        Gestures
+        This part handles the click events inside a 2D canvas scene.
+        todo: move to a different entity
+    */
+
+
+    Scene.prototype.initGestures = function() {
+      var _this = this;
+      return this._dom.addEventListener('mousedown', (function(event) {
+        return _this.onClick(event);
+      }), false);
+    };
+
+    Scene.prototype.onClick = function(event) {
+      var drawable, guid, intersect, intersects, x, y, _i, _len, _ref, _results;
+      x = event.pageX;
+      y = event.pageY;
+      intersects = [];
+      _ref = this._drawables;
+      for (guid in _ref) {
+        if (!__hasProp.call(_ref, guid)) continue;
+        drawable = _ref[guid];
+        if (drawable.intersects && drawable.intersects(x, y)) {
+          intersects.push(drawable);
+        }
+      }
+      _results = [];
+      for (_i = 0, _len = intersects.length; _i < _len; _i++) {
+        intersect = intersects[_i];
+        _results.push(intersect.onClick());
+      }
+      return _results;
+    };
+
+    return Scene;
+
+  })(AE.Object);
+
+  AE.Graphics3D = Graphics3D;
+
+  Graphics3D.Scene = (function(_super) {
+
+    __extends(Scene, _super);
+
+    function Scene(_width, _height) {
+      this._width = _width;
+      this._height = _height;
+      this._dom = document.createElement('canvas');
+      this._scene = new THREE.Scene();
+      this._camera = new THREE.PerspectiveCamera(75, this._width / this._height, 0.1, 1000);
+      this._renderer = new THREE.WebGLRenderer();
+      this.resize(this._width, this._height);
+    }
+
+    Scene.prototype.resize = function(width, height) {
+      this._width = width;
+      this._height = height;
+      this._renderer.setSize(this._width, this._height);
+      return this._camera.aspect = this._width / this._height;
+    };
+
+    Scene.prototype.attachTo = function(container) {
+      return container.appendChild(this._dom);
     };
 
     return Scene;
