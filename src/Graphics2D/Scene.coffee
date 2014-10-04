@@ -1,4 +1,5 @@
 #<< AE/Object
+#<< Graphics/Animate
 #<< Graphics2D/Drawable
 class Graphics2D.Scene extends AE.Object
   _drawables: []
