@@ -2,7 +2,7 @@ var AE = {'Assets':{},'MVC':{},'States':{},'Workers':{}};
 var Game = {};
 var Graphics = {};
 var Graphics2D = {'Geometry':{}};
-var Graphics3D = {};
+var Graphics3D = {'Geometry':{}};
 var Audio = {};
 var Network = {};
 
@@ -329,6 +329,14 @@ var Network = {};
         }
         return AE.log('--------------------');
       }
+    };
+
+    Config.prototype.get = function(key) {
+      if (this._opts[key]) {
+        return this._opts[key];
+      }
+      AE.error("AE.Config: no such key \'" + key + "\'");
+      return null;
     };
 
     return Config;
@@ -1299,31 +1307,184 @@ var Network = {};
 
   })(AE.Object);
 
+  Graphics3D.Drawable = (function(_super) {
+
+    __extends(Drawable, _super);
+
+    function Drawable() {
+      return Drawable.__super__.constructor.apply(this, arguments);
+    }
+
+    Drawable.prototype.update = function() {};
+
+    Drawable.prototype.draw = function() {};
+
+    return Drawable;
+
+  })(AE.Object);
+
+  Graphics3D.Geometry.Circle = (function(_super) {
+
+    __extends(Circle, _super);
+
+    Circle.extend(Graphics3D.Drawable);
+
+    function Circle(_radius, _segments) {
+      this._radius = _radius;
+      this._segments = _segments != null ? _segments : 32;
+      this.geometry = new THREE.CircleGeometry(this._radius, this._segments);
+      this.geometry.vertices.shift();
+      this.material = new THREE.LineBasicMaterial({
+        color: "cyan"
+      });
+      this.mesh = new THREE.Line(this.geometry, this.material);
+    }
+
+    return Circle;
+
+  })(AE.Object);
+
+  Graphics3D.Geometry.Cube = (function(_super) {
+
+    __extends(Cube, _super);
+
+    Cube.extend(Graphics3D.Drawable);
+
+    function Cube() {
+      this.geometry = new THREE.BoxGeometry(1, 1, 1);
+      this.material = new THREE.MeshBasicMaterial({
+        color: 0x00ff00
+      });
+      this.mesh = new THREE.Mesh(this.geometry, this.material);
+    }
+
+    return Cube;
+
+  })(AE.Object);
+
+  Graphics3D.Geometry.Line = (function(_super) {
+
+    __extends(Line, _super);
+
+    Line.extend(Graphics3D.Drawable);
+
+    function Line(_center, _length, _direction) {
+      var center, p1, p2;
+      this._center = _center;
+      this._length = _length;
+      this._direction = _direction;
+      this.geometry = new THREE.Geometry();
+      center = new THREE.Vector3(this._center.x, this._center.y, this._center.z);
+      p1 = new THREE.Vector3(this._center.x + ((this._length / 2) * this._direction.x), this._center.y + ((this._length / 2) * this._direction.y), this._center.z + ((this._length / 2) * this._direction.z));
+      p2 = new THREE.Vector3(this._center.x - ((this._length / 2) * this._direction.x), this._center.y - ((this._length / 2) * this._direction.y), this._center.z - ((this._length / 2) * this._direction.z));
+      this.geometry.vertices.push(p1);
+      this.geometry.vertices.push(center);
+      this.geometry.vertices.push(p2);
+      this.material = new THREE.LineBasicMaterial({
+        color: "cyan"
+      });
+      this.mesh = new THREE.Line(this.geometry, this.material);
+    }
+
+    return Line;
+
+  })(AE.Object);
+
   AE.Graphics3D = Graphics3D;
 
   Graphics3D.Scene = (function(_super) {
 
     __extends(Scene, _super);
 
+    Scene.prototype._drawables = [];
+
     function Scene(_width, _height) {
       this._width = _width;
       this._height = _height;
-      this._dom = document.createElement('canvas');
       this._scene = new THREE.Scene();
-      this._camera = new THREE.PerspectiveCamera(75, this._width / this._height, 0.1, 1000);
-      this._renderer = new THREE.WebGLRenderer();
-      this.resize(this._width, this._height);
+      this._camera = new THREE.PerspectiveCamera(90, this._width / this._height, 0.1, 1000);
+      this._renderer = new THREE.WebGLRenderer({
+        antialiasing: true
+      });
+      this._dom = this._renderer.domElement;
+      this._camera.position.z = 5;
+      this._controls = new THREE.OrbitControls(this._camera, this._dom);
     }
 
     Scene.prototype.resize = function(width, height) {
       this._width = width;
       this._height = height;
+      this._dom.width = this._width;
+      this._dom.height = this._height;
       this._renderer.setSize(this._width, this._height);
-      return this._camera.aspect = this._width / this._height;
+      this._camera.aspect = this._width / this._height;
+      return this._camera.updateProjectionMatrix();
     };
 
     Scene.prototype.attachTo = function(container) {
-      return container.appendChild(this._dom);
+      container.appendChild(this._dom);
+      this.resize(container.clientWidth, container.clientHeight);
+      if (AE.Config.getInstance().get('webgl-stats')) {
+        this._stats = new Stats();
+        this._stats.setMode(0);
+        this._stats.domElement.style.position = 'absolute';
+        this._stats.domElement.style.right = '0px';
+        this._stats.domElement.style.top = '0px';
+        return container.appendChild(this._stats.domElement);
+      }
+    };
+
+    Scene.prototype.add = function(drawable) {
+      this._scene.add(drawable.mesh);
+      return this._drawables[drawable.guid] = drawable;
+    };
+
+    Scene.prototype.remove = function(guid) {
+      this._scene.remove(this._drawables[guid]);
+      return delete this._drawables[guid];
+    };
+
+    Scene.prototype.update = function() {
+      var drawable, guid, _ref, _results;
+      _ref = this._drawables;
+      _results = [];
+      for (guid in _ref) {
+        if (!__hasProp.call(_ref, guid)) continue;
+        drawable = _ref[guid];
+        if (drawable.update) {
+          _results.push(drawable.update());
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
+
+    Scene.prototype.start = function() {
+      return this.render();
+    };
+
+    Scene.prototype.stop = function() {
+      if (this._timer) {
+        cancelAnimationFrame(this._timer);
+      }
+      return this._timer = null;
+    };
+
+    Scene.prototype.render = function() {
+      var _this = this;
+      this._timer = requestAnimationFrame((function() {
+        if (_this._stats) {
+          _this._stats.begin();
+        }
+        _this.render();
+        if (_this._stats) {
+          return _this._stats.end();
+        }
+      }));
+      this._controls.update();
+      this.update();
+      return this._renderer.render(this._scene, this._camera);
     };
 
     return Scene;
