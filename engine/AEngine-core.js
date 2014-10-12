@@ -957,9 +957,12 @@ var Network = {};
 
     function Router() {
       var _this = this;
-      window.onhashchange = function() {
+      window.addEventListener("hashchange", (function() {
         return _this.listen();
-      };
+      }), false);
+      window.addEventListener('load', function(e) {
+        return AE.Router.getInstance().check();
+      });
     }
 
     Router.prototype.getFragment = function() {
@@ -1128,7 +1131,6 @@ var Network = {};
       AE.Config.getInstance().setConfig(opts);
       this.MessageBox = this.MessageBox;
       this.phasesManager = AE.States.GamePhasesManager.getInstance();
-      AE.Router.getInstance().check();
     }
 
     return Engine;
