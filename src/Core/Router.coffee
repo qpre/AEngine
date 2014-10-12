@@ -12,7 +12,9 @@ class AE.Router extends AE.Singleton
   _root: '/'
   
   constructor: () ->
-    window.onhashchange = () => @listen()
+    window.addEventListener "hashchange", (() => @listen()), false
+    # this will allow us to apply current route after load
+    window.addEventListener 'load', (e) -> AE.Router.getInstance().check()
   
   getFragment: () ->
     match = window.location.href.match /#(.*)$/

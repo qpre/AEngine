@@ -20,4 +20,3 @@ class Game.Engine extends AE.Engine
     AE.Config.getInstance().setConfig opts
     @MessageBox = @MessageBox
     @phasesManager = AE.States.GamePhasesManager.getInstance()
-    AE.Router.getInstance().check()
