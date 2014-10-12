@@ -965,6 +965,12 @@ var Network = {};
       });
     }
 
+    /*
+        getFragment: 
+        gets the current URL fragment from browser
+    */
+
+
     Router.prototype.getFragment = function() {
       var frag, match;
       match = window.location.href.match(/#(.*)$/);
@@ -972,9 +978,22 @@ var Network = {};
       return frag;
     };
 
+    /*
+        clearSlashes:
+        @param {String} path : the path to be cleaned up
+    */
+
+
     Router.prototype._clearSlashes = function(path) {
       return path.toString().replace(/\$/, '').replace(/^\//, '');
     };
+
+    /*
+        add: associates a regexp to a handler
+        @param {String} re : a regexp defining the route
+        @param {Function} handler: what to do with the route
+    */
+
 
     Router.prototype.add = function(re, handler) {
       this._routes.push({
@@ -983,6 +1002,12 @@ var Network = {};
       });
       return this;
     };
+
+    /*
+        remove:
+        @param {Function,String} param a selecotr for a route to remove
+    */
+
 
     Router.prototype.remove = function(param) {
       var route, _i, _len, _ref;
@@ -997,10 +1022,23 @@ var Network = {};
       return this;
     };
 
+    /*
+        flush: reinits the Router
+    */
+
+
     Router.prototype.flush = function() {
       this._routes = [];
       return this._root = '/';
     };
+
+    /*
+        check: applies the handler for a path fragment
+        (if any)
+      
+        @param {frag} the path fragment to be checked
+    */
+
 
     Router.prototype.check = function(frag) {
       var fragment, match, route, _i, _len, _ref;
@@ -1015,9 +1053,15 @@ var Network = {};
           return this;
         }
       }
-      AE.log("AE.Router: no such route #" + fragment);
+      AE.log("AE.Router: no such route " + fragment);
       return this;
     };
+
+    /*
+        listen: hashchanged event listener
+          retrieves the current path and applies check on it
+    */
+
 
     Router.prototype.listen = function() {
       if (window.location.hash !== this.current) {
@@ -1025,6 +1069,13 @@ var Network = {};
         return this.check(this.current);
       }
     };
+
+    /*
+        navigate: sets up a new hash path in the browser
+      
+        @param {String} path
+    */
+
 
     Router.prototype.navigate = function(path) {
       path = path || '';
