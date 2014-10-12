@@ -385,11 +385,12 @@ var Network = {};
     */
 
 
-    function GamePhase(_name, _in, _out, _run) {
+    function GamePhase(_name, _in, _out, _run, _requires) {
       this._name = _name;
       this._in = _in;
       this._out = _out;
       this._run = _run;
+      this._requires = _requires;
       this._statusChangedEvent = new AE.Event(this);
       this._statusChangedEvent.subscribe(this.onStatusChanged);
     }
@@ -515,7 +516,11 @@ var Network = {};
       if (this.has(name)) {
         return AE.error("Phase " + name + " already exists");
       } else {
-        return this._phases[name] = new AE.States.GamePhase(name, actionIn, actionOut, run);
+        this._phases[name] = new AE.States.GamePhase(name, actionIn, actionOut, run);
+        return AE.Router.getInstance().add(name, (function() {
+          AE.log("applying route");
+          return AE.States.GamePhasesManager.getInstance().setCurrent(name);
+        }).bind(name));
       }
     };
 
@@ -538,6 +543,7 @@ var Network = {};
 
     GamePhasesManager.prototype.setCurrent = function(current) {
       if (this.has(current.toString())) {
+        AE.Router.getInstance().navigate(current);
         this._current = this._phases[current.toString()];
         this._current.setActive();
         this._current["in"]();
@@ -934,6 +940,101 @@ var Network = {};
   })();
 
   /*
+  	AE.Router is the bridge between AE.GamePhase and the window.location
+  
+    adapted from:
+    krasimirtsonev.com/blog/article/A-modern-JavaScript-router-in-100-lines-history-api-pushState-hash-url
+  */
+
+
+  AE.Router = (function(_super) {
+
+    __extends(Router, _super);
+
+    Router.prototype._routes = [];
+
+    Router.prototype._root = '/';
+
+    function Router() {
+      var _this = this;
+      window.onhashchange = function() {
+        return _this.listen();
+      };
+    }
+
+    Router.prototype.getFragment = function() {
+      var frag, match;
+      match = window.location.href.match(/#(.*)$/);
+      frag = this._clearSlashes(match ? match[1] : '');
+      return frag;
+    };
+
+    Router.prototype._clearSlashes = function(path) {
+      return path.toString().replace(/\$/, '').replace(/^\//, '');
+    };
+
+    Router.prototype.add = function(re, handler) {
+      this._routes.push({
+        re: re,
+        handler: handler
+      });
+      return this;
+    };
+
+    Router.prototype.remove = function(param) {
+      var route, _i, _len, _ref;
+      _ref = this._routes;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        route = _ref[_i];
+        if (route.handler === param || route.re.toString() === param.toString()) {
+          this._routes.splice(i, 1);
+          return this;
+        }
+      }
+      return this;
+    };
+
+    Router.prototype.flush = function() {
+      this._routes = [];
+      return this._root = '/';
+    };
+
+    Router.prototype.check = function(frag) {
+      var fragment, match, route, _i, _len, _ref;
+      fragment = frag || this.getFragment();
+      _ref = this._routes;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        route = _ref[_i];
+        match = fragment.match(route.re);
+        if (match) {
+          match.shift();
+          route.handler.apply({}, match);
+          return this;
+        }
+      }
+      AE.log("AE.Router: no such route #" + fragment);
+      return this;
+    };
+
+    Router.prototype.listen = function() {
+      if (window.location.hash !== this.current) {
+        this.current = window.location.hash;
+        return this.check(this.current);
+      }
+    };
+
+    Router.prototype.navigate = function(path) {
+      path = path || '';
+      window.location.href.match(/#(.*)$/);
+      window.location.href = window.location.href.replace(/#(.*)$/, '') + ("#" + path);
+      return this;
+    };
+
+    return Router;
+
+  })(AE.Singleton);
+
+  /*
       Manager : a JS Workers managing class
           each instance creates it's own Worker with the script passed as an
           argument the AEWorker class is the interface for communicating with
@@ -1010,18 +1111,9 @@ var Network = {};
 
     __extends(Engine, _super);
 
-    Engine.prototype._phasesManager = null;
+    Engine.prototype.phasesManager = null;
 
     Engine.prototype._messageBox = null;
-
-    Engine.property('PhasesManager', {
-      get: function() {
-        if (!this._phasesManager) {
-          this._phasesManager = new AE.States.GamePhasesManager();
-        }
-        return this._phasesManager;
-      }
-    });
 
     Engine.property('MessageBox', {
       get: function() {
@@ -1035,6 +1127,8 @@ var Network = {};
     function Engine(opts) {
       AE.Config.getInstance().setConfig(opts);
       this.MessageBox = this.MessageBox;
+      this.phasesManager = AE.States.GamePhasesManager.getInstance();
+      AE.Router.getInstance().check();
     }
 
     return Engine;
