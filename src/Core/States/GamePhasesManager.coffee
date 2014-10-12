@@ -15,7 +15,7 @@ class AE.States.GamePhasesManager extends AE.Singleton
   # @private
   _current: null
 
-  # sinple constructor
+  # simple constructor
   constructor: () ->
     @_phases = {}
 
@@ -41,6 +41,9 @@ class AE.States.GamePhasesManager extends AE.Singleton
       AE.error "Phase " + name + " already exists"
     else
       @_phases[name] = new AE.States.GamePhase(name, actionIn, actionOut, run)
+      AE.Router.getInstance().add(name, (() ->
+        AE.log "applying route"
+        AE.States.GamePhasesManager.getInstance().setCurrent(name)).bind(name))
 
   ###
     current: returns the name of the current state
@@ -56,6 +59,7 @@ class AE.States.GamePhasesManager extends AE.Singleton
   ###
   setCurrent: (current) ->
     if (@has(current.toString()))
+      AE.Router.getInstance().navigate(current)
       @_current = @_phases[current.toString()]
       @_current.setActive()
       @_current.in()

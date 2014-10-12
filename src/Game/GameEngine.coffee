@@ -2,15 +2,10 @@
 AE.Game = Game
 
 class Game.Engine extends AE.Engine
-  _phasesManager: null
+  phasesManager: null
   _messageBox: null
 
-  @property 'PhasesManager',
-    get: () ->
-      if (!@_phasesManager)
-        @_phasesManager = new AE.States.GamePhasesManager()
-      @_phasesManager
-
+  # Lazy setting Message Box
   @property 'MessageBox',
     get: () ->
       if (!@_messageBox)
@@ -24,3 +19,5 @@ class Game.Engine extends AE.Engine
   constructor: (opts) ->
     AE.Config.getInstance().setConfig opts
     @MessageBox = @MessageBox
+    @phasesManager = AE.States.GamePhasesManager.getInstance()
+    AE.Router.getInstance().check()
