@@ -5,7 +5,8 @@
 	AE.Router is the bridge between AE.GamePhase and the window.location
 
   adapted from:
-  krasimirtsonev.com/blog/article/A-modern-JavaScript-router-in-100-lines-history-api-pushState-hash-url
+  krasimirtsonev.com/blog/article/A-modern-JavaScript-router-in-100-lines-\
+history-api-pushState-hash-url
 ###
 class AE.Router extends AE.Singleton
   _routes: []
@@ -18,9 +19,8 @@ class AE.Router extends AE.Singleton
     # this will allow us to apply current route after load
     window.addEventListener 'load', (e) -> AE.Router.getInstance().check()
   
-  
   ###
-    getFragment: 
+    getFragment:
     gets the current URL fragment from browser
   ###
   getFragment: () ->
@@ -46,7 +46,7 @@ class AE.Router extends AE.Singleton
   
   ###
     remove:
-    @param {Function,String} param a selecotr for a route to remove
+    @param {Function,String} param a selector for a route to remove
   ###
   remove: (param) ->
     for route in @_routes
@@ -57,7 +57,7 @@ class AE.Router extends AE.Singleton
   
   ###
     flush: reinits the Router
-  ###  
+  ###
   flush: () ->
     @_routes = []
     @_root = '/'
@@ -76,8 +76,9 @@ class AE.Router extends AE.Singleton
         match.shift()
         route.handler.apply {}, match
         return @
-    AE.log "AE.Router: no such route #{fragment}"
-    @
+
+    AE.log "AE.Router: no such route #{fragment}, redirecting at index"
+    @navigate @_root
     
   ###
     listen: hashchanged event listener
@@ -91,11 +92,11 @@ class AE.Router extends AE.Singleton
   ###
     navigate: sets up a new hash path in the browser
   
-    @param {String} path 
+    @param {String} path
   ###
       
   navigate: (path) ->
     path = path || ''
     window.location.href.match(/#(.*)$/)
-    window.location.href = window.location.href.replace(/#(.*)$/, '') + "##{path}"
+    window.location.href = window.location.href.replace(/#(.*)$/, '')+"##{path}"
     @
