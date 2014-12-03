@@ -943,7 +943,8 @@ var Network = {};
   	AE.Router is the bridge between AE.GamePhase and the window.location
   
     adapted from:
-    krasimirtsonev.com/blog/article/A-modern-JavaScript-router-in-100-lines-history-api-pushState-hash-url
+    krasimirtsonev.com/blog/article/A-modern-JavaScript-router-in-100-lines-\
+  history-api-pushState-hash-url
   */
 
 
@@ -966,7 +967,7 @@ var Network = {};
     }
 
     /*
-        getFragment: 
+        getFragment:
         gets the current URL fragment from browser
     */
 
@@ -1005,7 +1006,7 @@ var Network = {};
 
     /*
         remove:
-        @param {Function,String} param a selecotr for a route to remove
+        @param {Function,String} param a selector for a route to remove
     */
 
 
@@ -1053,8 +1054,8 @@ var Network = {};
           return this;
         }
       }
-      AE.log("AE.Router: no such route " + fragment);
-      return this;
+      AE.log("AE.Router: no such route " + fragment + ", redirecting at index");
+      return this.navigate(this._root);
     };
 
     /*
