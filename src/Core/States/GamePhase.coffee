@@ -26,7 +26,7 @@ class AE.States.GamePhase extends AE.Object
     @param {Function} _out : the function to be triggered when leaving the state
     @param {Function} _run : the function handling the state
   ###
-  constructor: (@_name, @_in, @_out, @_run, @_beforeFilters = []) ->
+  constructor: (@_name, @_in, @_out, @_run) ->
     @_statusChangedEvent = new AE.Event(@)
     @_statusChangedEvent.subscribe(@onStatusChanged)
 
@@ -61,8 +61,6 @@ class AE.States.GamePhase extends AE.Object
     self explanatory
   ###
   in: () ->
-    for filter in @_beforeFilters
-      filter.apply {}, []
     @_in()
 
   ###
