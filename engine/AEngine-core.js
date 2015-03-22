@@ -640,9 +640,12 @@ var Network = {};
       }
     };
 
-    FileSystem.prototype.readFile = function(filePath, onSuccess) {
+    FileSystem.prototype.readFile = function(filePath, onSuccess, returnType) {
       var file, fileReader,
         _this = this;
+      if (returnType == null) {
+        returnType = 'url';
+      }
       if (this._filesMap) {
         if (this._filesMap[filePath]) {
           file = this._filesMap[filePath];
@@ -652,7 +655,12 @@ var Network = {};
               return onSuccess(fileReader.result);
             };
           }
-          return fileReader.readAsText(file);
+          switch (returnType) {
+            case 'text':
+              return fileReader.readAsText(file);
+            case 'url':
+              return fileReader.readAsDataURL(file);
+          }
         } else {
           return AE.error('FILE NOT FOUND : #{filePath}');
         }
@@ -773,7 +781,7 @@ var Network = {};
       _results = [];
       for (assetPath in _ref) {
         asset = _ref[assetPath];
-        if (asset !== null) {
+        if (asset === null) {
           _results.push(this.loadSingleAsset(assetPath, onReady, onOneAssetLoaded));
         } else {
           _results.push(void 0);
@@ -782,14 +790,16 @@ var Network = {};
       return _results;
     };
 
-    Manager.prototype.loadSingleAsset = function(asset, onReady, onOneAssetLoaded) {
+    Manager.prototype.loadSingleAsset = function(assetPath, onReady, onOneAssetLoaded) {
       var loader,
         _this = this;
       loader = this.createURLLoader(assetPath, function(file) {
         AE.log("" + assetPath + " ready");
         _this.assets[assetPath] = file;
         _this.remaining = _this.remaining - 1;
-        onOneAssetLoaded();
+        if (typeof onOneAssetLoaded === "function") {
+          onOneAssetLoaded(_this.remaining);
+        }
         if (_this.remaining === 0) {
           return onReady();
         }
@@ -808,6 +818,22 @@ var Network = {};
         return AE.error("" + name + " not referenced");
       } else {
         return this.assets[name];
+      }
+    };
+
+    Manager.prototype.getSyncFile = function(path) {
+      var lock, result;
+      if (this.has(path)) {
+        lock = true;
+        result = null;
+        AE.FileSystem.getInstance().readFile(path, function(readerResult) {
+          lock = false;
+          return result = readerResult;
+        });
+        while (lock) {
+          true;
+        }
+        return result;
       }
     };
 
@@ -1246,18 +1272,28 @@ var Network = {};
     draw: function(ctx) {}
   };
 
+  Object.extend = function(destination, source) {
+    var property;
+    for (property in source) {
+      destination[property] = source[property];
+    }
+    return destination;
+  };
+
   Graphics2D.Geometry.Circle = (function(_super) {
 
     __extends(Circle, _super);
 
     Circle.include(Graphics2D.Drawable);
 
-    function Circle(x, y, radius, strokeStyle, strokeSize) {
-      this.x = x;
-      this.y = y;
-      this.radius = radius;
-      this.strokeStyle = strokeStyle != null ? strokeStyle : "#00FF00";
-      this.strokeSize = strokeSize != null ? strokeSize : 1;
+    Circle.prototype.defaults = {
+      strokeStyle: "#00FF00",
+      strokeSize: 1
+    };
+
+    function Circle(opts) {
+      opts = Object.extend(this.defaults, opts);
+      this.x = opts.x, this.y = opts.y, this.radius = opts.radius, this.strokeStyle = opts.strokeStyle, this.strokeSize = opts.strokeSize;
       this.squareRadius = this.radius * this.radius;
     }
 
@@ -1266,7 +1302,10 @@ var Network = {};
       ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
       ctx.lineWidth = this.strokeSize;
       ctx.strokeStyle = this.strokeStyle;
-      return ctx.stroke();
+      ctx.stroke();
+      if (this.imageOpts) {
+        return this._drawImage(ctx);
+      }
     };
 
     Circle.prototype.intersects = function(x, y) {
@@ -1274,6 +1313,25 @@ var Network = {};
         return true;
       }
       return false;
+    };
+
+    Circle.prototype.fillWithImage = function(opts) {
+      var height, path, width, x, y,
+        _this = this;
+      this.imageOpts = (path = opts.path, x = opts.x, y = opts.y, width = opts.width, height = opts.height, opts);
+      this.imageOpts.img = new Image();
+      this.imageOpts.img.addEventListener('load', function(e) {
+        return _this.imageOpts.loaded = true;
+      });
+      return AE.FileSystem.getInstance().readFile(this.imageOpts.path, function(result) {
+        return _this.imageOpts.img.src = result;
+      });
+    };
+
+    Circle.prototype._drawImage = function(ctx) {
+      if (this.imageOpts.loaded) {
+        return ctx.drawImage(this.imageOpts.img, this.imageOpts.x, this.imageOpts.y, this.imageOpts.width, this.imageOpts.height);
+      }
     };
 
     Circle.prototype.onClick = function() {
@@ -1694,7 +1752,7 @@ var Network = {};
       var file,
         _this = this;
       file = AE.Assets.Manager.getInstance().get(this.name);
-      return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
+      return AE.FileSystem.getInstance().readBuffer(file, (function(buffer) {
         return _this.system.context.decodeAudioData(buffer, function(b) {
           _this.buffer = b;
           _this.loaded = true;
@@ -1702,7 +1760,7 @@ var Network = {};
             return onPrepared();
           }
         });
-      });
+      }), 'text');
     };
 
     Effect.prototype.fire = function() {
@@ -1794,7 +1852,7 @@ var Network = {};
       var file,
         _this = this;
       file = AE.Assets.Manager.getInstance().get(this.name);
-      return AE.FileSystem.getInstance().readBuffer(file, function(buffer) {
+      return AE.FileSystem.getInstance().readBuffer(file, (function(buffer) {
         return _this.system.context.decodeAudioData(buffer, function(b) {
           _this.buffer = b;
           _this.loaded = true;
@@ -1802,7 +1860,7 @@ var Network = {};
             return onPrepared();
           }
         });
-      });
+      }), 'text');
     };
 
     Music.prototype.play = function() {
