@@ -385,12 +385,12 @@ var Network = {};
     */
 
 
-    function GamePhase(_name, _in, _out, _run, _requires) {
+    function GamePhase(_name, _in, _out, _run, _beforeFilters) {
       this._name = _name;
       this._in = _in;
       this._out = _out;
       this._run = _run;
-      this._requires = _requires;
+      this._beforeFilters = _beforeFilters != null ? _beforeFilters : [];
       this._statusChangedEvent = new AE.Event(this);
       this._statusChangedEvent.subscribe(this.onStatusChanged);
     }
@@ -441,6 +441,12 @@ var Network = {};
 
 
     GamePhase.prototype["in"] = function() {
+      var filter, _i, _len, _ref;
+      _ref = this._beforeFilters;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        filter = _ref[_i];
+        filter.apply({}, []);
+      }
       return this._in();
     };
 
@@ -996,11 +1002,14 @@ var Network = {};
     */
 
 
-    Router.prototype.add = function(re, handler) {
+    Router.prototype.add = function(re, handler, isRoot) {
       this._routes.push({
         re: re,
         handler: handler
       });
+      if (isRoot) {
+        this._root = re;
+      }
       return this;
     };
 
@@ -1036,7 +1045,7 @@ var Network = {};
     /*
         check: applies the handler for a path fragment
         (if any)
-      
+    
         @param {frag} the path fragment to be checked
     */
 
@@ -1073,7 +1082,7 @@ var Network = {};
 
     /*
         navigate: sets up a new hash path in the browser
-      
+    
         @param {String} path
     */
 
@@ -1218,41 +1227,25 @@ var Network = {};
     }
   })();
 
-  Graphics2D.Clickable = (function() {
-
-    function Clickable() {}
-
-    Clickable.prototype.intersects = function(x, y) {
+  Graphics2D.Clickable = {
+    intersects: function(x, y) {
       return false;
-    };
-
-    Clickable.prototype.onClick = function() {
+    },
+    onClick: function() {
       return console.log("Baby touch me one more time");
-    };
+    }
+  };
 
-    return Clickable;
-
-  })();
-
-  Graphics2D.Drawable = (function() {
-
-    function Drawable() {}
-
-    Drawable.prototype.update = function() {};
-
-    Drawable.prototype.draw = function(ctx) {};
-
-    return Drawable;
-
-  })();
+  Graphics2D.Drawable = {
+    update: function() {},
+    draw: function(ctx) {}
+  };
 
   Graphics2D.Geometry.Circle = (function(_super) {
 
     __extends(Circle, _super);
 
     Circle.include(Graphics2D.Drawable);
-
-    Circle.include(Graphics2D.Clickable);
 
     function Circle(x, y, radius, strokeStyle, strokeSize) {
       this.x = x;
@@ -1290,6 +1283,8 @@ var Network = {};
 
     __extends(Rectangle, _super);
 
+    Rectangle.include(Graphics2D.Drawable);
+
     function Rectangle(x, y, width, height, color) {
       this.x = x;
       this.y = y;
@@ -1299,14 +1294,13 @@ var Network = {};
     }
 
     Rectangle.prototype.draw = function(ctx) {
-      Rectangle.__super__.draw.apply(this, arguments);
       ctx.fillStyle = this.color;
       return ctx.fillRect(this.x, this.y, this.width, this.height);
     };
 
     return Rectangle;
 
-  })(Graphics2D.Drawable);
+  })(AE.Object);
 
   AE.Graphics2D = Graphics2D;
 
@@ -1370,7 +1364,11 @@ var Network = {};
       for (guid in _ref) {
         if (!__hasProp.call(_ref, guid)) continue;
         drawable = _ref[guid];
-        _results.push(drawable.update());
+        if (drawable.update) {
+          _results.push(drawable.update());
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     };
