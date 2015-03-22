@@ -746,30 +746,38 @@ var Network = {};
 
     Manager.prototype.assets = {};
 
-    Manager.prototype.manifest = {};
+    Manager.prototype.length = 0;
 
     Manager.prototype.register = function(filesMap) {
-      var assetName, assetPath, _results;
+      var assetPath, _i, _len, _results;
+      if (filesMap == null) {
+        filesMap = [];
+      }
       _results = [];
-      for (assetName in filesMap) {
-        assetPath = filesMap[assetName];
-        this.assetsOrigin.push({
-          name: assetName,
-          path: assetPath
-        });
-        _results.push(this.assets[assetName] = null);
+      for (_i = 0, _len = filesMap.length; _i < _len; _i++) {
+        assetPath = filesMap[_i];
+        if (this.assets[assetPath] === void 0) {
+          this.assets[assetPath] = null;
+          _results.push(this.length++);
+        } else {
+          _results.push(AE.debug("ASSETS: " + assetPath + " has already been registered"));
+        }
       }
       return _results;
     };
 
     Manager.prototype.load = function(onReady, onOneAssetLoaded) {
-      var asset, _i, _len, _ref, _results;
-      this.remaining = this.assetsOrigin.length;
-      _ref = this.assetsOrigin;
+      var asset, assetPath, _ref, _results;
+      this.remaining = this.length;
+      _ref = this.assets;
       _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        asset = _ref[_i];
-        _results.push(this.loadSingleAsset(asset, onReady, onOneAssetLoaded));
+      for (assetPath in _ref) {
+        asset = _ref[assetPath];
+        if (asset !== null) {
+          _results.push(this.loadSingleAsset(assetPath, onReady, onOneAssetLoaded));
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     };
@@ -777,9 +785,9 @@ var Network = {};
     Manager.prototype.loadSingleAsset = function(asset, onReady, onOneAssetLoaded) {
       var loader,
         _this = this;
-      loader = this.createURLLoader(asset.path, function(file) {
-        console.log("" + asset.name + " ready");
-        _this.assets[asset.name] = file;
+      loader = this.createURLLoader(assetPath, function(file) {
+        AE.log("" + assetPath + " ready");
+        _this.assets[assetPath] = file;
         _this.remaining = _this.remaining - 1;
         onOneAssetLoaded();
         if (_this.remaining === 0) {
@@ -787,6 +795,10 @@ var Network = {};
         }
       });
       return loader.load();
+    };
+
+    Manager.prototype.has = function(path) {
+      return this.assets[path] === void 0;
     };
 
     Manager.prototype.get = function(name) {
