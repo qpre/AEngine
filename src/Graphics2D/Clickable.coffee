@@ -1,7 +1,7 @@
 #<< AE/Object
 #<< AE/Event
 
-class Graphics2D.Clickable
+Graphics2D.Clickable =
   intersects: (x, y) ->
     false
 

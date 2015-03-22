@@ -1,7 +1,7 @@
 #<< Graphics2D/Drawable
+
 class Graphics2D.Geometry.Circle extends AE.Object
   @include Graphics2D.Drawable
-  @include Graphics2D.Clickable
 
   constructor: (@x, @y, @radius, @strokeStyle="#00FF00", @strokeSize=1) ->
     @squareRadius = @radius * @radius

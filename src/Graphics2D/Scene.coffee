@@ -1,6 +1,7 @@
 #<< AE/Object
 #<< Graphics/Animate
 #<< Graphics2D/Drawable
+
 class Graphics2D.Scene extends AE.Object
   _drawables: []
 
@@ -32,7 +33,7 @@ class Graphics2D.Scene extends AE.Object
 
   updateAll: () ->
     for own guid, drawable of @_drawables
-      drawable.update()
+      if drawable.update then drawable.update()
 
   renderAll: () ->
     @clearScreen()
