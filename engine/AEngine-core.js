@@ -385,12 +385,11 @@ var Network = {};
     */
 
 
-    function GamePhase(_name, _in, _out, _run, _beforeFilters) {
+    function GamePhase(_name, _in, _out, _run) {
       this._name = _name;
       this._in = _in;
       this._out = _out;
       this._run = _run;
-      this._beforeFilters = _beforeFilters != null ? _beforeFilters : [];
       this._statusChangedEvent = new AE.Event(this);
       this._statusChangedEvent.subscribe(this.onStatusChanged);
     }
@@ -441,12 +440,6 @@ var Network = {};
 
 
     GamePhase.prototype["in"] = function() {
-      var filter, _i, _len, _ref;
-      _ref = this._beforeFilters;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        filter = _ref[_i];
-        filter.apply({}, []);
-      }
       return this._in();
     };
 
