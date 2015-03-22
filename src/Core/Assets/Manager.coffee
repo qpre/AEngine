@@ -7,26 +7,33 @@
 class AE.Assets.Manager extends AE.Singleton
   assetsOrigin: [] # contains all the assets definitions
   assets: {} # contains all the loaded assets
-  manifest: {}
-  
-  register: (filesMap) ->
-    for assetName, assetPath of filesMap
-      @assetsOrigin.push {name: assetName, path: assetPath}
-      @assets[assetName] = null
+  length: 0
+
+  register: (filesMap = []) ->
+    for assetPath in filesMap
+      if @assets[assetPath] is undefined
+        @assets[assetPath] = null
+        @length++
+      else
+        AE.debug "ASSETS: #{assetPath} has already been registered"
 
   load: (onReady, onOneAssetLoaded) ->
-    @remaining = @assetsOrigin.length
-    for asset in @assetsOrigin
-      @loadSingleAsset(asset, onReady, onOneAssetLoaded)
+    @remaining = @length
+    for assetPath, asset of @assets
+      if asset isnt null # Avoiding to reload already loaded filed
+        @loadSingleAsset(assetPath, onReady, onOneAssetLoaded)
 
   loadSingleAsset: (asset, onReady, onOneAssetLoaded) ->
-    loader = @createURLLoader asset.path, (file) =>
-      console.log "#{asset.name} ready"
-      @assets[asset.name] = file
+    loader = @createURLLoader assetPath, (file) =>
+      AE.log "#{assetPath} ready"
+      @assets[assetPath] = file
       @remaining = @remaining - 1
       onOneAssetLoaded()
       if @remaining == 0 then onReady()
     loader.load()
+
+  has: (path) ->
+    @assets[path] is undefined
 
   get: (name) ->
     if (@assets[name] == null)
