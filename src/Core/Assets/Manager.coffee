@@ -20,15 +20,15 @@ class AE.Assets.Manager extends AE.Singleton
   load: (onReady, onOneAssetLoaded) ->
     @remaining = @length
     for assetPath, asset of @assets
-      if asset isnt null # Avoiding to reload already loaded filed
+      if asset is null # Avoiding to reload already loaded filed
         @loadSingleAsset(assetPath, onReady, onOneAssetLoaded)
 
-  loadSingleAsset: (asset, onReady, onOneAssetLoaded) ->
+  loadSingleAsset: (assetPath, onReady, onOneAssetLoaded) ->
     loader = @createURLLoader assetPath, (file) =>
       AE.log "#{assetPath} ready"
       @assets[assetPath] = file
       @remaining = @remaining - 1
-      onOneAssetLoaded()
+      onOneAssetLoaded?(@remaining)
       if @remaining == 0 then onReady()
     loader.load()
 
@@ -42,6 +42,19 @@ class AE.Assets.Manager extends AE.Singleton
       AE.error "#{name} not referenced"
     else
       @assets[name]
+
+  getSyncFile: (path) ->
+    if @has path
+      lock = true
+      result = null
+
+      AE.FileSystem.getInstance().readFile path, (readerResult) ->
+        lock = false
+        result = readerResult
+      while lock
+        true
+      result
+
 
   createURLLoader: (fileURL, onSuccess) ->
     loader = new AE.Assets.URLLoader fileURL, onSuccess
