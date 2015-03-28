@@ -36,14 +36,13 @@ class AE.FileSystem extends AE.Singleton
       @createFileSystem () =>
         @writeFile filePath, file, onWrite
 
-  readFile: (filePath, onSuccess, returnType='url') ->
+  readFile: (filePath, onSuccess, onError, returnType='text') ->
     if @_filesMap
       if @_filesMap[filePath]
         file = @_filesMap[filePath]
         fileReader = new FileReader()
-        if (onSuccess)
-          fileReader.onloadend = () ->
-            onSuccess fileReader.result
+        fileReader.onloadend = () ->
+          onSuccess? fileReader.result
 
         switch returnType
           when 'text'
@@ -52,9 +51,26 @@ class AE.FileSystem extends AE.Singleton
             fileReader.readAsDataURL file
       else
         AE.error 'FILE NOT FOUND : #{filePath}'
+        onError?()
     else
       @createFileSystem () =>
         @readFile filePath, onSuccess
+
+  readFileSync: (filePath, returnType='text') ->
+    loaded = false
+    res = null
+
+    onLoaded = (result) ->
+      console.log 'loaded'
+      loaded = true
+      res = result
+
+    @readFile filePath, onLoaded, onLoaded, returnType
+
+    while !loaded
+      true
+
+    res
 
   readBuffer: (filePath, onSuccess) ->
     if @_filesMap

@@ -44,16 +44,7 @@ class AE.Assets.Manager extends AE.Singleton
       @assets[name]
 
   getSyncFile: (path) ->
-    if @has path
-      lock = true
-      result = null
-
-      AE.FileSystem.getInstance().readFile path, (readerResult) ->
-        lock = false
-        result = readerResult
-      while lock
-        true
-      result
+    AE.FileSystem.getInstance().readFileSync @get(path), 'url'
 
 
   createURLLoader: (fileURL, onSuccess) ->

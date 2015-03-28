@@ -40,8 +40,10 @@ class Graphics2D.Scene extends AE.Object
     @updateAll()
 
     ctx = @_dom.getContext '2d'
+    ctx.save()
     for own guid, drawable of @_drawables
       drawable.draw(ctx)
+    ctx.restore()
 
   add: (drawable) ->
     @_drawables[drawable.guid] = drawable
