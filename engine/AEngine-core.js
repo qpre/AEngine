@@ -640,21 +640,19 @@ var Network = {};
       }
     };
 
-    FileSystem.prototype.readFile = function(filePath, onSuccess, returnType) {
+    FileSystem.prototype.readFile = function(filePath, onSuccess, onError, returnType) {
       var file, fileReader,
         _this = this;
       if (returnType == null) {
-        returnType = 'url';
+        returnType = 'text';
       }
       if (this._filesMap) {
         if (this._filesMap[filePath]) {
           file = this._filesMap[filePath];
           fileReader = new FileReader();
-          if (onSuccess) {
-            fileReader.onloadend = function() {
-              return onSuccess(fileReader.result);
-            };
-          }
+          fileReader.onloadend = function() {
+            return typeof onSuccess === "function" ? onSuccess(fileReader.result) : void 0;
+          };
           switch (returnType) {
             case 'text':
               return fileReader.readAsText(file);
@@ -662,13 +660,33 @@ var Network = {};
               return fileReader.readAsDataURL(file);
           }
         } else {
-          return AE.error('FILE NOT FOUND : #{filePath}');
+          AE.error('FILE NOT FOUND : #{filePath}');
+          return typeof onError === "function" ? onError() : void 0;
         }
       } else {
         return this.createFileSystem(function() {
           return _this.readFile(filePath, onSuccess);
         });
       }
+    };
+
+    FileSystem.prototype.readFileSync = function(filePath, returnType) {
+      var loaded, onLoaded, res;
+      if (returnType == null) {
+        returnType = 'text';
+      }
+      loaded = false;
+      res = null;
+      onLoaded = function(result) {
+        console.log('loaded');
+        loaded = true;
+        return res = result;
+      };
+      this.readFile(filePath, onLoaded, onLoaded, returnType);
+      while (!loaded) {
+        true;
+      }
+      return res;
     };
 
     FileSystem.prototype.readBuffer = function(filePath, onSuccess) {
@@ -822,19 +840,7 @@ var Network = {};
     };
 
     Manager.prototype.getSyncFile = function(path) {
-      var lock, result;
-      if (this.has(path)) {
-        lock = true;
-        result = null;
-        AE.FileSystem.getInstance().readFile(path, function(readerResult) {
-          lock = false;
-          return result = readerResult;
-        });
-        while (lock) {
-          true;
-        }
-        return result;
-      }
+      return AE.FileSystem.getInstance().readFileSync(this.get(path), 'url');
     };
 
     Manager.prototype.createURLLoader = function(fileURL, onSuccess) {
@@ -1286,6 +1292,8 @@ var Network = {};
 
     Circle.include(Graphics2D.Drawable);
 
+    Circle.include(Graphics2D.ImageFillable);
+
     Circle.prototype.defaults = {
       strokeStyle: "#00FF00",
       strokeSize: 1
@@ -1298,14 +1306,18 @@ var Network = {};
     }
 
     Circle.prototype.draw = function(ctx) {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
+      ctx.save();
       ctx.lineWidth = this.strokeSize;
       ctx.strokeStyle = this.strokeStyle;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
+      ctx.closePath();
       ctx.stroke();
+      ctx.clip();
       if (this.imageOpts) {
-        return this._drawImage(ctx);
+        this.drawImage(ctx);
       }
+      return ctx.restore();
     };
 
     Circle.prototype.intersects = function(x, y) {
@@ -1313,25 +1325,6 @@ var Network = {};
         return true;
       }
       return false;
-    };
-
-    Circle.prototype.fillWithImage = function(opts) {
-      var height, path, width, x, y,
-        _this = this;
-      this.imageOpts = (path = opts.path, x = opts.x, y = opts.y, width = opts.width, height = opts.height, opts);
-      this.imageOpts.img = new Image();
-      this.imageOpts.img.addEventListener('load', function(e) {
-        return _this.imageOpts.loaded = true;
-      });
-      return AE.FileSystem.getInstance().readFile(this.imageOpts.path, function(result) {
-        return _this.imageOpts.img.src = result;
-      });
-    };
-
-    Circle.prototype._drawImage = function(ctx) {
-      if (this.imageOpts.loaded) {
-        return ctx.drawImage(this.imageOpts.img, this.imageOpts.x, this.imageOpts.y, this.imageOpts.width, this.imageOpts.height);
-      }
     };
 
     Circle.prototype.onClick = function() {
@@ -1348,6 +1341,8 @@ var Network = {};
 
     Rectangle.include(Graphics2D.Drawable);
 
+    Rectangle.include(Graphics2D.ImageFillable);
+
     function Rectangle(x, y, width, height, color) {
       this.x = x;
       this.y = y;
@@ -1358,7 +1353,10 @@ var Network = {};
 
     Rectangle.prototype.draw = function(ctx) {
       ctx.fillStyle = this.color;
-      return ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+      if (this.imageOpts) {
+        return this.drawImage();
+      }
     };
 
     return Rectangle;
@@ -1437,18 +1435,18 @@ var Network = {};
     };
 
     Scene.prototype.renderAll = function() {
-      var ctx, drawable, guid, _ref, _results;
+      var ctx, drawable, guid, _ref;
       this.clearScreen();
       this.updateAll();
       ctx = this._dom.getContext('2d');
+      ctx.save();
       _ref = this._drawables;
-      _results = [];
       for (guid in _ref) {
         if (!__hasProp.call(_ref, guid)) continue;
         drawable = _ref[guid];
-        _results.push(drawable.draw(ctx));
+        drawable.draw(ctx);
       }
-      return _results;
+      return ctx.restore();
     };
 
     Scene.prototype.add = function(drawable) {
