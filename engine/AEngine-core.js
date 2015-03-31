@@ -233,6 +233,34 @@ var Network = {};
 
   })();
 
+  Graphics2D.ImageHandler = (function() {
+
+    ImageHandler.prototype.imageDefaults = {
+      x: 0,
+      y: 0
+    };
+
+    function ImageHandler(opts) {
+      var _this = this;
+      opts = Object.extend(this.imageDefaults, opts);
+      this.path = opts.path, this.x = opts.x, this.y = opts.y, this.width = opts.width, this.height = opts.height;
+      this.img = new Image();
+      this.img.addEventListener('load', function(e) {
+        return _this.loaded = true;
+      });
+      this.img.src = this.path;
+    }
+
+    ImageHandler.prototype.draw = function(ctx) {
+      if (this.loaded) {
+        return ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+      }
+    };
+
+    return ImageHandler;
+
+  })();
+
   Audio.SubSystem = (function(_super) {
 
     __extends(SubSystem, _super);
@@ -1264,6 +1292,134 @@ var Network = {};
     }
   })();
 
+  Graphics2D.Camera = (function(_super) {
+    var x, y;
+
+    __extends(Camera, _super);
+
+    x = 0;
+
+    y = 0;
+
+    Camera.prototype.speed = 800;
+
+    Camera.prototype.scaleFactor = 1;
+
+    function Camera(_dom, scene, x, y, cameraW, cameraY, sceneW, sceneY) {
+      this._dom = _dom;
+      this.scene = scene;
+      this.x = x;
+      this.y = y;
+      this.cameraW = cameraW;
+      this.cameraY = cameraY;
+      this.sceneW = sceneW;
+      this.sceneY = sceneY;
+      this._initControls();
+    }
+
+    Camera.prototype.update = function(step) {
+      step /= 1000;
+      if (this.goLeft) {
+        if (this.x > 10) {
+          this.x += (20 * step) / this.scaleFactor;
+        }
+      }
+      if (this.goUp) {
+        if (this.y > 10) {
+          this.y += (20 * step) / this.scaleFactor;
+        }
+      }
+      if (this.goDown) {
+        if (this.y < this.scene.height()) {
+          this.y -= 20 * step;
+        }
+      }
+      if (this.goRight) {
+        if (this.x < this.scene.width()) {
+          return this.x -= 20 * step;
+        }
+      }
+    };
+
+    Camera.prototype.resize = function(width, height) {
+      if (width == null) {
+        width = this.cameraW;
+      }
+      if (height == null) {
+        height = this.cameraY;
+      }
+      this._dom.width = width;
+      return this._dom.height = height;
+    };
+
+    Camera.prototype.position = function(x, y) {
+      this.x = x != null ? x : this.x;
+      this.y = y != null ? y : this.y;
+      return {
+        x: this.x,
+        y: this.y
+      };
+    };
+
+    Camera.prototype.scale = function(ctx) {
+      return ctx.scale(this.scaleFactor, this.scaleFactor);
+    };
+
+    Camera.prototype.onMouseWheel = function(e) {
+      var delta;
+      e = window.event || e;
+      delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
+      if (this.scaleFactor <= 3 && this.scaleFactor >= 0.5) {
+        this.scaleFactor += delta / 50;
+        if (delta < 0) {
+          this.scaleFactor = Math.max(this.scaleFactor, 0.5);
+        }
+        if (delta > 0) {
+          this.scaleFactor = Math.min(this.scaleFactor, 3);
+        }
+      }
+      return false;
+    };
+
+    Camera.prototype.onKeyChange = function(e, value) {
+      switch (e.keyCode) {
+        case 37:
+          return this.goLeft = value;
+        case 38:
+          return this.goUp = value;
+        case 39:
+          return this.goRight = value;
+        case 40:
+          return this.goDown = value;
+      }
+    };
+
+    Camera.prototype._initControls = function() {
+      var _this = this;
+      if (window.addEventListener) {
+        window.addEventListener("mousewheel", (function(e) {
+          return _this.onMouseWheel(e);
+        }), false);
+        window.addEventListener("DOMMouseScroll", (function(e) {
+          return _this.onMouseWheel(e);
+        }), false);
+      } else {
+        window.attachEvent("onmousewheel", (function(e) {
+          return _this.onMouseWheel(e);
+        }));
+      }
+      window.addEventListener("keyup", function(e) {
+        return _this.onKeyChange(e, false);
+      });
+      return window.addEventListener("keydown", function(e) {
+        return _this.onKeyChange(e, true);
+      });
+    };
+
+    return Camera;
+
+  })(AE.Object);
+
   Graphics2D.Clickable = {
     intersects: function(x, y) {
       return false;
@@ -1273,10 +1429,21 @@ var Network = {};
     }
   };
 
-  Graphics2D.Drawable = {
-    update: function() {},
-    draw: function(ctx) {}
-  };
+  Graphics2D.Drawable = (function(_super) {
+
+    __extends(Drawable, _super);
+
+    function Drawable() {
+      return Drawable.__super__.constructor.apply(this, arguments);
+    }
+
+    Drawable.prototype.update = function() {};
+
+    Drawable.prototype.draw = function(ctx) {};
+
+    return Drawable;
+
+  })(AE.Object);
 
   Object.extend = function(destination, source) {
     var property;
@@ -1290,10 +1457,6 @@ var Network = {};
 
     __extends(Circle, _super);
 
-    Circle.include(Graphics2D.Drawable);
-
-    Circle.include(Graphics2D.ImageFillable);
-
     Circle.prototype.defaults = {
       strokeStyle: "#00FF00",
       strokeSize: 1
@@ -1306,16 +1469,11 @@ var Network = {};
     }
 
     Circle.prototype.draw = function(ctx) {
+      var _ref;
       ctx.save();
-      ctx.lineWidth = this.strokeSize;
-      ctx.strokeStyle = this.strokeStyle;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
-      ctx.closePath();
-      ctx.stroke();
-      ctx.clip();
-      if (this.imageOpts) {
-        this.drawImage(ctx);
+      ctx.translate(this.x, this.y);
+      if ((_ref = this.imageHandler) != null) {
+        _ref.draw(ctx);
       }
       return ctx.restore();
     };
@@ -1331,17 +1489,19 @@ var Network = {};
       return console.log("Baby touch me one more time");
     };
 
+    Circle.prototype.fillWithImage = function(opts) {
+      return this.imageHandler = new Graphics2D.ImageHandler(opts);
+    };
+
     return Circle;
 
-  })(AE.Object);
+  })(Graphics2D.Drawable);
 
   Graphics2D.Geometry.Rectangle = (function(_super) {
 
     __extends(Rectangle, _super);
 
     Rectangle.include(Graphics2D.Drawable);
-
-    Rectangle.include(Graphics2D.ImageFillable);
 
     function Rectangle(x, y, width, height, color) {
       this.x = x;
@@ -1355,7 +1515,7 @@ var Network = {};
       ctx.fillStyle = this.color;
       ctx.fillRect(this.x, this.y, this.width, this.height);
       if (this.imageOpts) {
-        return this.drawImage();
+        return this.drawImage(ctx);
       }
     };
 
@@ -1376,14 +1536,22 @@ var Network = {};
       this._height = _height;
       this._dom = document.createElement('canvas');
       this.resize(this._width, this._height);
+      this.fill('black');
+      this.camera = new Graphics2D.Camera(this._dom, this, 0, 0, this._width, this._height);
       this.initGestures();
     }
+
+    Scene.prototype.width = function() {
+      return this._width;
+    };
+
+    Scene.prototype.height = function() {
+      return this._height;
+    };
 
     Scene.prototype.resize = function(_width, _height) {
       this._width = _width;
       this._height = _height;
-      this._dom.height = this._height;
-      this._dom.width = this._width;
       if (this._fillRect) {
         this._drawables[this._fillRect].width = this._width;
         return this._drawables[this._fillRect].height = this._height;
@@ -1418,15 +1586,16 @@ var Network = {};
       return _results;
     };
 
-    Scene.prototype.updateAll = function() {
+    Scene.prototype.updateAll = function(step) {
       var drawable, guid, _ref, _results;
+      this.camera.update(step);
       _ref = this._drawables;
       _results = [];
       for (guid in _ref) {
         if (!__hasProp.call(_ref, guid)) continue;
         drawable = _ref[guid];
         if (drawable.update) {
-          _results.push(drawable.update());
+          _results.push(drawable.update(step));
         } else {
           _results.push(void 0);
         }
@@ -1435,11 +1604,14 @@ var Network = {};
     };
 
     Scene.prototype.renderAll = function() {
-      var ctx, drawable, guid, _ref;
+      var ctx, drawable, guid, step, _ref;
+      step = Date.now() - this.timeStart;
       this.clearScreen();
-      this.updateAll();
+      this.updateAll(step);
       ctx = this._dom.getContext('2d');
       ctx.save();
+      this.camera.scale(ctx);
+      ctx.translate(this.camera.x, this.camera.y);
       _ref = this._drawables;
       for (guid in _ref) {
         if (!__hasProp.call(_ref, guid)) continue;
@@ -1463,6 +1635,7 @@ var Network = {};
 
     Scene.prototype.start = function() {
       this.renderAll();
+      this.timeStart = Date.now();
       return this._timer = requestAnimationFrame((function() {
         return this.start();
       }).bind(this));
