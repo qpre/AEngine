@@ -3,8 +3,6 @@
 
 class Graphics2D.Geometry.Rectangle extends AE.Object
   @include Graphics2D.Drawable
-  @include Graphics2D.ImageFillable
-
   constructor: (@x, @y, @width, @height, @color) ->
 
   draw: (ctx) ->
@@ -12,4 +10,4 @@ class Graphics2D.Geometry.Rectangle extends AE.Object
     ctx.fillRect @x, @y, @width, @height
 
     if @imageOpts
-      @drawImage()
+      @drawImage(ctx)

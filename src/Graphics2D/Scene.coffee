@@ -1,6 +1,7 @@
 #<< AE/Object
 #<< Graphics/Animate
 #<< Graphics2D/Drawable
+#<< Graphics2D/Camera
 
 class Graphics2D.Scene extends AE.Object
   _drawables: []
@@ -8,11 +9,17 @@ class Graphics2D.Scene extends AE.Object
   constructor: (@_width, @_height) ->
     @_dom = document.createElement 'canvas'
     @resize @_width, @_height
+    @fill 'black'
+    @camera = new Graphics2D.Camera @_dom, @, 0, 0, @_width, @_height
     @initGestures()
 
+  width: ()->
+    @_width
+
+  height: ()->
+    @_height
+
   resize: (@_width, @_height) ->
-    @_dom.height = @_height
-    @_dom.width  = @_width
     if @_fillRect
       @_drawables[@_fillRect].width = @_width
       @_drawables[@_fillRect].height = @_height
@@ -31,18 +38,22 @@ class Graphics2D.Scene extends AE.Object
     for own guid, drawable of @_drawables
       delete @_drawables[guid]
 
-  updateAll: () ->
+  updateAll: (step) ->
+    @camera.update step
     for own guid, drawable of @_drawables
-      if drawable.update then drawable.update()
+      if drawable.update then drawable.update step
 
   renderAll: () ->
+    step = Date.now() - @timeStart
     @clearScreen()
-    @updateAll()
+    @updateAll(step)
 
     ctx = @_dom.getContext '2d'
     ctx.save()
+    @camera.scale ctx
+    ctx.translate @camera.x, @camera.y
     for own guid, drawable of @_drawables
-      drawable.draw(ctx)
+      drawable.draw ctx
     ctx.restore()
 
   add: (drawable) ->
@@ -56,6 +67,7 @@ class Graphics2D.Scene extends AE.Object
 
   start: () ->
     @renderAll()
+    @timeStart = Date.now()
     @_timer = requestAnimationFrame (() -> @start()).bind @
 
   stop: () ->
