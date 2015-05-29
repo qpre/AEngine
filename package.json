@@ -1,23 +1,40 @@
 {
-  "name": "AEngine",
-  "version": "0.0.0",
+  "name": "A-Engine",
+  "version": "1.0.0",
+  "description": "A-Engine",
   "devDependencies": {
-    "grunt-contrib-clean": "*",
-    "grunt-cli": "*",
-    "grunt-contrib-watch": "*",
+    "babelify": "^6.1.2",
+    "connect-livereload": "^0.5.3",
     "grunt": "*",
-    "grunt-contrib-copy": "*",
+    "grunt-browserify": "^3.8.0",
+    "grunt-cli": "*",
+    "grunt-contrib-clean": "*",
     "grunt-contrib-coffee": "*",
-    "codo": "*",
-    "grunt-codo": "*",
-    "grunt-shell": "*",
-    "grunt-rehab": "*",
-    "grunt-coffee-toaster": "*",
-    "grunt-open": "*",
     "grunt-contrib-connect": "*",
-    "grunt-coffeelint": "*"
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-watch": "*",
+    "grunt-jscs": "^1.8.0",
+    "grunt-open": "*",
+    "grunt-shell": "*",
+    "load-grunt-tasks": "^3.2.0"
   },
   "scripts": {
-    "test": "grunt build"
-  }
+    "test": "grunt dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qpre/AEngine.git"
+  },
+  "keywords": [
+    "game",
+    "engine",
+    "js",
+    "web"
+  ],
+  "author": "Quentin Pre @ AgenceTousRisques",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/qpre/AEngine/issues"
+  },
+  "homepage": "https://github.com/qpre/AEngine"
 }

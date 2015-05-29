@@ -1,1 +1,0 @@
-#if "onhashchange" in window then AE.error "browser not supported"
