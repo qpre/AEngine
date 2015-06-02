@@ -11,10 +11,7 @@ pids
 logs
 results
 
-legacy
 
-src/**/*.js
-src/**/*.map
 
 npm-debug.log
 node_modules
