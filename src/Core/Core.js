@@ -7,6 +7,7 @@ import IDFactory from './IDFactory';
 import Game from './Game';
 import Network from '../Network/Network';
 import FileSystem from './FileSystem';
+import Router from './Router';
 
 
 // Exposing utils
@@ -19,6 +20,7 @@ AE['IDFactory']   = IDFactory;
 AE['Object']      = AEObject;
 AE['Event']       = Event;
 AE['FileSystem']  = FileSystem;
+AE['Router']      = Router;
 
 // Exposing main engines
 AE['Game']    = Game;
