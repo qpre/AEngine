@@ -5,6 +5,7 @@ import AEObject from './Object';
 import IDFactory from './IDFactory';
 import Game from './Game';
 import Network from '../Network/Network';
+import FileSystem from './FileSystem';
 
 
 // Exposing utils
@@ -13,8 +14,9 @@ AE['debug'] = debug;
 AE['error'] = error;
 
 // Exposing Core
-AE['IDFactory'] = IDFactory;
-AE['Object']    = AEObject;
+AE['IDFactory']   = IDFactory;
+AE['Object']      = AEObject;
+AE['FileSystem']  = FileSystem;
 
 // Exposing main engines
 AE['Game']    = Game;
