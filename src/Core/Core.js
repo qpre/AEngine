@@ -2,6 +2,7 @@ let AE = {};
 
 import {log, debug, error} from './Console';
 import AEObject from './Object';
+import Event from './Event';
 import IDFactory from './IDFactory';
 import Game from './Game';
 import Network from '../Network/Network';
@@ -16,6 +17,7 @@ AE['error'] = error;
 // Exposing Core
 AE['IDFactory']   = IDFactory;
 AE['Object']      = AEObject;
+AE['Event']       = Event;
 AE['FileSystem']  = FileSystem;
 
 // Exposing main engines
