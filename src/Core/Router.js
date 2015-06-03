@@ -7,7 +7,7 @@ class Router {
       this.listen();
     }, false);
 
-    window.addEventListener('load', function(e) {
+    window.addEventListener('load', () => {
       this.check();
     });
   }

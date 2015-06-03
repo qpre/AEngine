@@ -4,10 +4,12 @@ import {log, debug, error} from './Console';
 import AEObject from './Object';
 import Event from './Event';
 import IDFactory from './IDFactory';
-import Game from './Game';
-import Network from '../Network/Network';
 import FileSystem from './FileSystem';
 import Router from './Router';
+
+import Game from './Game';
+import Network from '../Network/Network';
+import Assets from '../Assets/Assets';
 
 
 // Exposing utils
@@ -23,6 +25,7 @@ AE['FileSystem']  = FileSystem;
 AE['Router']      = Router;
 
 // Exposing main engines
+AE['Assets']  = Assets;
 AE['Game']    = Game;
 AE['Network'] = Network;
 
