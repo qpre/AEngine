@@ -6,6 +6,7 @@ import Event from './Event';
 import IDFactory from './IDFactory';
 import FileSystem from './FileSystem';
 import Router from './Router';
+import Workers from './Workers/Workers';
 
 import Game from './Game';
 import Network from '../Network/Network';
@@ -23,6 +24,7 @@ AE['Object']      = AEObject;
 AE['Event']       = Event;
 AE['FileSystem']  = FileSystem;
 AE['Router']      = Router;
+AE['Workers']     = Workers;
 
 // Exposing main engines
 AE['Assets']  = Assets;

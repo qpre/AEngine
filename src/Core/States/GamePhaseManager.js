@@ -36,9 +36,9 @@ class GamePhasesManager {
       return AE.error("Phase " + name + " already exists");
     } else {
       this._phases[name] = new AE.States.GamePhase(name, actionIn, actionOut, run);
-      return AE.Router.getInstance().add(name, (function() {
+      return AE.Router.add(name, (function() {
         AE.log("applying route");
-        return AE.States.GamePhasesManager.getInstance().setCurrent(name);
+        return AE.States.GamePhasesManager.setCurrent(name);
       }).bind(name));
     }
   }
@@ -63,7 +63,7 @@ class GamePhasesManager {
 
   setCurrent (current) {
     if (this.has(current.toString())) {
-      AE.Router.getInstance().navigate(current);
+      AE.Router.navigate(current);
       this._current = this._phases[current.toString()];
       this._current.setActive();
       this._current["in"]();
