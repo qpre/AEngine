@@ -7,10 +7,12 @@ import IDFactory from './IDFactory';
 import FileSystem from './FileSystem';
 import Router from './Router';
 import Workers from './Workers/Workers';
+import Engine from './Engine';
 
 import Game from './Game';
 import Network from '../Network/Network';
 import Assets from '../Assets/Assets';
+import Audio from '../Audio/Audio';
 
 
 // Exposing utils
@@ -25,10 +27,12 @@ AE['Event']       = Event;
 AE['FileSystem']  = FileSystem;
 AE['Router']      = Router;
 AE['Workers']     = Workers;
+AE['Engine']      = Engine;
 
 // Exposing main engines
 AE['Assets']  = Assets;
 AE['Game']    = Game;
 AE['Network'] = Network;
+AE['Audio']   = Audio;
 
 window.AE = AE;
