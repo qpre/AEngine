@@ -27,6 +27,7 @@ export default class Effect {
 
   fire () {
     let source;
+
     source = this.system.context.createBufferSource();
 
     source.buffer = this.buffer;
